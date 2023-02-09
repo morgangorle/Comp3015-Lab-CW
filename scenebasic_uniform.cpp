@@ -17,7 +17,7 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.8f,0.3f,30,30) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.8f,0.3f,75,75) {}
 
 
 
@@ -36,6 +36,14 @@ void SceneBasic_Uniform::initScene()
     
     prog.setUniform("Kd", 0.2f,0.55f,0.9f);
     prog.setUniform("Ld", 1.0f,1.0f,1.0f);
+
+    prog.setUniform("Ka", 0.2f, 0.55f, 0.9f);
+    prog.setUniform("La", 1.0f, 1.0f, 1.0f);
+
+    prog.setUniform("Ks", 0.2f, 0.55f, 0.9f);
+    prog.setUniform("Ls", 1.0f, 1.0f, 1.0f);
+
+
     prog.setUniform("LightPosition", view *
         glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 
@@ -56,8 +64,8 @@ void SceneBasic_Uniform::compile()
 
 void SceneBasic_Uniform::update( float t )
 {
-    angle += 0.01;
-    model = glm::rotate(model, glm::radians(angle), vec3(angle, angle, angle));
+    angle = 1.1f;
+    model = glm::rotate(model, glm::radians(angle), vec3(0, angle, angle));
 
 }
 
