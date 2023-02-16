@@ -6,18 +6,25 @@ layout (location = 1) in vec3 VertexNormal;
 out vec3 LightIntensity;
 
 //Light info
-uniform vec4 LightPosition;
-uniform vec3 Ld; //Diffuse
-uniform vec3 La; //Ambient
-uniform vec3 Ls; //Specular
+uniform struct LightInfo{
+    vec4 Position;
+    vec3 La; //Ambient
+    vec3 Ld; //Diffuse
+    vec3 Ls; //Specular
+    } Light;
 
 
 // Material info
-uniform vec3 Kd; //Diffuse
-uniform vec3 Ka; //Ambient
-uniform vec3 Ks; //Specular
-uniform float Shininess;
+uniform struct MaterialInfo{
+    vec3 Ka; //Ambient
+    vec3 Kd; //Diffuse
+    vec3 Ks; //Specular
+    float Shininess; //Shininess factor
 
+} Material;
+
+
+//Matrixes
 uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 MVP;
