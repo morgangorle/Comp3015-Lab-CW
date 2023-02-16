@@ -13,11 +13,16 @@ using std::endl;
 #include "helper/glutils.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <sstream>
 using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.8f,0.3f,75,75) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : plane(10.0f, 10.0f, 100, 100) 
+{
+    mesh = ObjMesh::load("../Comp3015-Lab-Work/media/pig_triangulated.obj",
+        true);
+}
 
 
 
@@ -27,25 +32,42 @@ void SceneBasic_Uniform::initScene()
 
     glEnable(GL_DEPTH_TEST);
 
-    model = mat4(1.0f);
-    //model = glm::rotate(model, glm::radians(-35.0f), vec3(1.0f, 0.0f, 0.0f));
-    view = glm::lookAt(vec3(0.0f, 0.0f, 2.0f), vec3(0.0f, 0.0f, 0.0f),
+    view = glm::lookAt(vec3(0.5f, 0.75f, 0.75f), vec3(0.0f, 0.0f, 0.0f),
         vec3(0.0f, 1.0f, 0.0f));
     projection = mat4(1.0f);
+    float x, z;
+    for (int i = 0; i < 3; i++)
+    {
+        std::stringstream name;
+        name << "lights[" << i << "].Position";
+        x = 2.0f * cosf((glm::two_pi<float>() / 3) * i);
+        z = 2.0f * sinf((glm::two_pi<float>() / 3) * i);
+        prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z +
+            1.0f, 1.0f));
+    }
 
-    
-    prog.setUniform("Kd", 0.2f,0.55f,0.9f);
-    prog.setUniform("Ld", 1.0f,1.0f,1.0f);
+    // Set uniforms for the lighting
+    prog.setUniform("lights[0].L", vec3(0.0f, 0.0f, 0.8f));
+    prog.setUniform("lights[1].L", vec3(0.0f, 0.8f, 0.0f));
+    prog.setUniform("lights[2].L", vec3(0.8f, 0.0f, 0.0f));
 
-    prog.setUniform("Ka", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("La", 1.0f, 1.0f, 1.0f);
-
-    prog.setUniform("Ks", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("Ls", 1.0f, 1.0f, 1.0f);
-
-
-    prog.setUniform("LightPosition", view *
-        glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    prog.setUniform("Material.Kd", 0.4f, 0.4f, 0.4f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Ka", 0.5f, 0.5f, 0.5f);
+    prog.setUniform("Material.Shininess", 180.0f);
+    model = mat4(1.0f);
+    model = glm::rotate(model, glm::radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+    setMatrices();
+    mesh->render();
+    prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Shininess", 180.0f);
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -0.45f, 0.0f));
+    setMatrices();
+    plane.render();
 
 }
 
@@ -74,7 +96,7 @@ void SceneBasic_Uniform::render()
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     setMatrices();
-    SceneTorus.render();
+    //SceneTorus.render();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)

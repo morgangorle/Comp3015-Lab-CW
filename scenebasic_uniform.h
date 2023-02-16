@@ -9,7 +9,10 @@
 #include <glad/glad.h>
 #include "helper/glslprogram.h"
 
-#include "helper/torus.h"
+//#include "helper/torus.h"
+
+#include "helper/plane.h"
+#include "helper/objmesh.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -17,7 +20,10 @@ private:
     //GLuint vaoHandle;
     GLSLProgram prog;
     //float angle;
-    Torus SceneTorus;
+    Plane plane; //plane surface
+    std::unique_ptr<ObjMesh> mesh; //pig mesh
+
+    //Torus SceneTorus;
 
     void compile();
 
