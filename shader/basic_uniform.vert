@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec3 VertexNormal;
 
-out vec3 LightIntensity;
+out vec3 Colour;
 
 //Light info
 uniform struct LightInfo{
@@ -11,7 +11,7 @@ uniform struct LightInfo{
     vec3 La; //Ambient
     vec3 Ld; //Diffuse
     vec3 Ls; //Specular
-    } Light;
+    } lights[3];
 
 
 // Material info
@@ -29,18 +29,18 @@ uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 MVP;
 
-vec3 phong(vec3 n, vec4 pos){
+vec3 phong(int Light , vec3 n, vec4 pos){
     //Handle Ambient Lighting
-    vec3 ambient = Light.La*Material.Ka;
+    vec3 ambient = lights[Light].La*Material.Ka;
 
-    vec3 s = normalize(vec3(Light.Position-pos));
+    vec3 s = normalize(vec3(lights[Light].Position-pos));
     float sDotN = max(dot(s,n),0.0);
-    vec3 diffuse = Light.Ld*Material.Kd *sDotN;
+    vec3 diffuse = lights[Light].Ld*Material.Kd *sDotN;
     vec3 spec = vec3(0.0);
     if(sDotN>0.0){
         vec3 v = normalize(-pos.xyz);
         vec3 r = reflect(-s,n);
-        spec = Light.Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
+        spec = lights[Light].Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
     }
     
     return ambient+diffuse+spec;
@@ -56,7 +56,10 @@ void main()
     vec3 camNorm;
     vec4 camPosition;
     getCamSpaceValues(camNorm,camPosition);
-
-    LightIntensity = phong(camNorm,camPosition);
+    Colour = vec3(0.0);
+    for (int i=0; i<3; i++)
+    {
+        Colour+= phong(i,camNorm,camPosition);
+    }
     gl_Position = MVP*vec4(VertexPosition,1.0);
 }
