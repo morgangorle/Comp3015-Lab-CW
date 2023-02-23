@@ -108,6 +108,7 @@ void SceneBasic_Uniform::setMatrices()
     prog.setUniform("ModelViewMatrix", mv);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]),vec3(mv[1]),vec3(mv[2])));
     prog.setUniform("MVP", projection * mv);
+    prog.setUniform("ProjectionMatrix", projection);
 
 
 }
