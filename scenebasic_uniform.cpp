@@ -17,7 +17,7 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.8f,0.3f,75,75) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.7f,0.3f,50,50) {}
 
 
 
@@ -33,18 +33,17 @@ void SceneBasic_Uniform::initScene()
         vec3(0.0f, 1.0f, 0.0f));
     projection = mat4(1.0f);
 
-    
-    prog.setUniform("Kd", 0.2f,0.55f,0.9f);
-    prog.setUniform("Ld", 1.0f,1.0f,1.0f);
+    //Set Material Uniform values
+    prog.setUniform("Material.Kd", 0.2f,0.55f,0.9f);
+    prog.setUniform("Material.Ka", 0.2f, 0.55f, 0.9f);
+    prog.setUniform("Material.Ks", 0.8f, 0.8f, 0.8f);
+    prog.setUniform("Material.Shininess", 100.0f);
 
-    prog.setUniform("Ka", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("La", 1.0f, 1.0f, 1.0f);
-
-    prog.setUniform("Ks", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("Ls", 1.0f, 1.0f, 1.0f);
-
-
-    prog.setUniform("LightPosition", view *
+    // Set Lighting Uniform Values
+    prog.setUniform("Light.Ld", 1.0f, 1.0f, 1.0f);
+    prog.setUniform("Light.La", 0.4f, 0.4f, 0.4f);
+    prog.setUniform("Light.Ls", 1.0f, 1.0f, 1.0f);
+    prog.setUniform("Light.Position", view *
         glm::vec4(5.0f, 5.0f, 2.0f, 1.0f));
 
 }
