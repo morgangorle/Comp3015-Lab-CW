@@ -17,7 +17,7 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.7f,0.3f,50,50) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.7f,0.3f,5,50) {}
 
 
 
