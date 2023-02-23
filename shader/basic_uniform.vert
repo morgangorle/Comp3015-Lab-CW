@@ -33,7 +33,22 @@ void main()
 {
     vec3 n = normalize(NormalMatrix*VertexNormal);
     vec4 pos = ModelViewMatrix * vec4(VertexPosition,1.0);
-    vec3 s = normalize(vec3(LightPosition-pos));
-    LightIntensity = Kd * Ld * max(dot(s,n),0.0);
+
+    //Handle Ambient Lighting
+    vec3 ambient = Light.La*Material.Ka;
+
+    vec3 s = normalize(vec3(Light.Position-pos));
+    float sDotN = max(dot(s,n),0.0);
+    vec3 diffuse = Light.Ld*Material.Kd *sDotN;
+    vec3 spec = vec3(0.0);
+    if(sDotN>0.0){
+        vec3 v = normalize(-pos.xyz);
+        vec3 r = reflect(-s,n);
+        spec = Light.Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
+    }
+    
+    LightIntensity = ambient+diffuse+spec;
+
+
     gl_Position = MVP*vec4(VertexPosition,1.0);
 }
