@@ -48,7 +48,7 @@ void SceneBasic_Uniform::initScene()
         name << "lights[" << i << "].Position";
         x = 2.0f * cosf((glm::two_pi<float>() / 3 * i));
         z = 2.0f * sinf((glm::two_pi<float>() / 3 * i));
-        prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z + 1.0f, 1.0f));
+        prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z + 1.0f, 0.0f));
     }
     prog.setUniform("lights[0].Ld", 0.0f, 0.0f, 1.8f);
     prog.setUniform("lights[1].Ld", 0.0f, 1.8f, 0.0f);
