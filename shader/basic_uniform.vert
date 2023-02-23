@@ -46,11 +46,17 @@ vec3 phong(vec3 n, vec4 pos){
     return ambient+diffuse+spec;
 }
 
+void getCamSpaceValues(out vec3 norm, out vec4 position){
+    norm = normalize(NormalMatrix*VertexNormal);
+    position = ModelViewMatrix * vec4(VertexPosition,1.0);
+}
+
 void main()
 {
-    vec3 n = normalize(NormalMatrix*VertexNormal);
-    vec4 pos = ModelViewMatrix * vec4(VertexPosition,1.0);
+    vec3 camNorm;
+    vec4 camPosition;
+    getCamSpaceValues(camNorm,camPosition);
 
-    LightIntensity = phong(n,pos);
+    LightIntensity = phong(camNorm,camPosition);
     gl_Position = MVP*vec4(VertexPosition,1.0);
 }
