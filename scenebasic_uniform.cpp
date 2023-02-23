@@ -18,7 +18,10 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(50 , glm::translate(mat4(1.0f),vec3(2.0f,2.0f,0.0f))) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : ScenePlane(10.0f,10.0f,100,100) 
+{
+    mesh = ObjMesh::load("../Comp3015-Lab-Work/media/pig_triangulated.obj",true);
+}
 
 
 
@@ -30,15 +33,9 @@ void SceneBasic_Uniform::initScene()
 
     model = mat4(1.0f);
     model = glm::rotate(model, glm::radians(160.0f), vec3(0.0f, 0.0f, 1.0f));
-    view = glm::lookAt(vec3(-1.0f, 6.0f, 5.0f), vec3(0.0f, 0.0f, 0.0f),
-        vec3(0.0f, 0.1f, 0.0f));
+    view = glm::lookAt(vec3(0.5f, 0.75f, 0.75f), vec3(0.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 0.0f));
     projection = mat4(1.0f);
-
-    //Set Material Uniform values
-    prog.setUniform("Material.Kd", 0.1f,0.1f,0.1f);
-    prog.setUniform("Material.Ka", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Shininess", 180.0f);
 
     // Set Lighting Uniform Values
     float x, z;
@@ -50,9 +47,9 @@ void SceneBasic_Uniform::initScene()
         z = 2.0f * sinf((glm::two_pi<float>() / 3 * i));
         prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z + 1.0f, 0.0f));
     }
-    prog.setUniform("lights[0].Ld", 0.0f, 0.0f, 1.8f);
-    prog.setUniform("lights[1].Ld", 0.0f, 1.8f, 0.0f);
-    prog.setUniform("lights[2].Ld", 1.8f, 0.0f, 0.0f);
+    prog.setUniform("lights[0].Ld", 0.0f, 0.0f, 0.8f);
+    prog.setUniform("lights[1].Ld", 0.0f, 0.8f, 0.0f);
+    prog.setUniform("lights[2].Ld", 0.8f, 0.0f, 0.0f);
 
     prog.setUniform("lights[0].La", 0.0f, 0.0f, 0.1f);
     prog.setUniform("lights[1].La", 0.0f, 0.1f, 0.0f);
@@ -79,8 +76,8 @@ void SceneBasic_Uniform::compile()
 
 void SceneBasic_Uniform::update( float t )
 {
-    //angle = 1.1f;
-   //model = glm::rotate(model, glm::radians(angle), vec3(0, 0, angle));
+   //angle = 1.1f;
+   //model = glm::rotate(model, glm::radians(angle), vec3(0, angle, angle));
 
 }
 
@@ -88,8 +85,29 @@ void SceneBasic_Uniform::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
+
+    //Set Material Uniform values
+    prog.setUniform("Material.Kd", 0.4f, 0.4f, 0.4f);
+    prog.setUniform("Material.Ka", 0.5f, 0.5f, 0.5f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Shininess", 180.0f);
+
+    model = mat4(1.0f);
+    //model = glm::rotate(model, glm::radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
     setMatrices();
-    SceneTeapot.render();
+    mesh->render();
+
+    //Set Material Uniform values
+    prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Shininess", 180.0f);
+
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -0.45f, 0.0f));
+    setMatrices();
+    ScenePlane.render();
+
 }
 
 void SceneBasic_Uniform::resize(int w, int h)

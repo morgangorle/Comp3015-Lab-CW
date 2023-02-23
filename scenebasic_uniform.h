@@ -9,8 +9,11 @@
 #include <glad/glad.h>
 #include "helper/glslprogram.h"
 
+
+#include "helper/plane.h"
 //#include "helper/torus.h"
-#include "helper/teapot.h"
+//#include "helper/teapot.h"
+#include "helper/objmesh.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -19,7 +22,9 @@ private:
     GLSLProgram prog;
     //float angle;
     //Torus SceneTorus;
-    Teapot SceneTeapot;
+    //Teapot SceneTeapot;
+    Plane ScenePlane;
+    std::unique_ptr<ObjMesh> mesh;
 
     void compile();
 
