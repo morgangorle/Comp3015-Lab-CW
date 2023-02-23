@@ -45,7 +45,7 @@ void SceneBasic_Uniform::initScene()
     for (int i = 0; i < 3; i++)
     {
         std::stringstream name;
-        name << "lights[" << i << "[.Position";
+        name << "lights[" << i << "].Position";
         x = 2.0f * cosf((glm::two_pi<float>() / 3 * i));
         z = 2.0f * sinf((glm::two_pi<float>() / 3 * i));
         prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z + 1.0f, 1.0f));
