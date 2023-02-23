@@ -29,11 +29,7 @@ uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 MVP;
 
-void main()
-{
-    vec3 n = normalize(NormalMatrix*VertexNormal);
-    vec4 pos = ModelViewMatrix * vec4(VertexPosition,1.0);
-
+vec3 phong(vec3 n, vec4 pos){
     //Handle Ambient Lighting
     vec3 ambient = Light.La*Material.Ka;
 
@@ -47,8 +43,14 @@ void main()
         spec = Light.Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
     }
     
-    LightIntensity = ambient+diffuse+spec;
+    return ambient+diffuse+spec;
+}
 
+void main()
+{
+    vec3 n = normalize(NormalMatrix*VertexNormal);
+    vec4 pos = ModelViewMatrix * vec4(VertexPosition,1.0);
 
+    LightIntensity = phong(n,pos);
     gl_Position = MVP*vec4(VertexPosition,1.0);
 }
