@@ -17,7 +17,7 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(50 , glm::translate(mat4(1.0f),vec3(0.0f,0.0f,0.0f))) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(50 , glm::translate(mat4(1.0f),vec3(2.0f,2.0f,0.0f))) {}
 
 
 
@@ -28,9 +28,9 @@ void SceneBasic_Uniform::initScene()
     glEnable(GL_DEPTH_TEST);
 
     model = mat4(1.0f);
-    //model = glm::rotate(model, glm::radians(-35.0f), vec3(1.0f, 0.0f, 0.0f));
-    view = glm::lookAt(vec3(0.0f, 0.0f, 2.0f), vec3(0.0f, 0.0f, 0.0f),
-        vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
+    view = glm::lookAt(vec3(-1.0f, 6.0f, 5.0f), vec3(0.0f, 0.0f, 0.0f),
+        vec3(0.0f, 0.1f, 0.0f));
     projection = mat4(1.0f);
 
     //Set Material Uniform values
@@ -64,7 +64,7 @@ void SceneBasic_Uniform::compile()
 void SceneBasic_Uniform::update( float t )
 {
     angle = 1.1f;
-    model = glm::rotate(model, glm::radians(angle), vec3(0, angle, angle));
+    model = glm::rotate(model, glm::radians(angle), vec3(0, 0, angle));
 
 }
 
