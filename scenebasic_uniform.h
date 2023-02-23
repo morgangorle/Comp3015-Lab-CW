@@ -9,7 +9,8 @@
 #include <glad/glad.h>
 #include "helper/glslprogram.h"
 
-#include "helper/torus.h"
+//#include "helper/torus.h"
+#include "helper/teapot.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -17,7 +18,8 @@ private:
     //GLuint vaoHandle;
     GLSLProgram prog;
     //float angle;
-    Torus SceneTorus;
+    //Torus SceneTorus;
+    Teapot SceneTeapot;
 
     void compile();
 

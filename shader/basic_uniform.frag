@@ -3,7 +3,7 @@
 //in vec3 Color;
 layout (location = 0) out vec4 FragColor;
 
-flat in vec3 LightIntensity;
+in vec3 LightIntensity;
 
 
 void main() {

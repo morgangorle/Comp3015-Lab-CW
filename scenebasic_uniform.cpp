@@ -17,7 +17,7 @@ using glm::vec3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTorus(0.7f,0.3f,5,50) {}
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(50 , glm::translate(mat4(1.0f),vec3(0.0f,0.0f,0.0f))) {}
 
 
 
@@ -73,7 +73,7 @@ void SceneBasic_Uniform::render()
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     setMatrices();
-    SceneTorus.render();
+    SceneTeapot.render();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
