@@ -15,50 +15,27 @@ using std::endl;
 
 #include <glm/gtc/matrix_transform.hpp>
 using glm::vec3;
+using glm::vec4;
+using glm::mat3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : ScenePlane(10.0f,10.0f,100,100) 
-{
-    mesh = ObjMesh::load("../Comp3015-Lab-Work/media/pig_triangulated.obj",true);
-}
+SceneBasic_Uniform::SceneBasic_Uniform() : ScenePlane(50.0f,50.0f,1,1) , SceneTeapot(14,glm::mat4(1.0f)), SceneTorus(1.75f*0.75f, 1.75f * 0.75f,50,50){}
 
 
 
 void SceneBasic_Uniform::initScene()
 {
     compile();
-
     glEnable(GL_DEPTH_TEST);
-
-    model = mat4(1.0f);
-    model = glm::rotate(model, glm::radians(160.0f), vec3(0.0f, 0.0f, 1.0f));
-    view = glm::lookAt(vec3(0.5f, 0.75f, 0.75f), vec3(0.0f, 0.0f, 0.0f),
-        vec3(0.0f, 1.0f, 0.0f));
+    view = glm::lookAt(vec3(5.0f, 5.0f, 7.5f), vec3(0.0f, 0.75f, 0.0f), vec3(0.0f,
+        1.0f, 0.0f));
     projection = mat4(1.0f);
-
-    // Set Lighting Uniform Values
-    float x, z;
-    for (int i = 0; i < 3; i++)
-    {
-        std::stringstream name;
-        name << "lights[" << i << "].Position";
-        x = 2.0f * cosf((glm::two_pi<float>() / 3 * i));
-        z = 2.0f * sinf((glm::two_pi<float>() / 3 * i));
-        prog.setUniform(name.str().c_str(), view * glm::vec4(x, 1.2f, z + 1.0f, 0.0f));
-    }
-    prog.setUniform("lights[0].Ld", 0.0f, 0.0f, 0.8f);
-    prog.setUniform("lights[1].Ld", 0.0f, 0.8f, 0.0f);
-    prog.setUniform("lights[2].Ld", 0.8f, 0.0f, 0.0f);
-
-    prog.setUniform("lights[0].La", 0.0f, 0.0f, 0.1f);
-    prog.setUniform("lights[1].La", 0.0f, 0.1f, 0.0f);
-    prog.setUniform("lights[2].La", 0.1f, 0.0f, 0.0f);
-
-    prog.setUniform("lights[0].Ls", 0.0f, 0.0f, 0.8f);
-    prog.setUniform("lights[1].Ls", 0.0f, 0.8f, 0.0f);
-    prog.setUniform("lights[2].Ls", 0.8f, 0.0f, 0.0f);
-
+    prog.setUniform("Spot.La", vec3(0.5f));
+    prog.setUniform("Spot.Ld", vec3(0.9f));
+    prog.setUniform("Spot.Ls", vec3(0.9f));
+    prog.setUniform("Spot.Exponent", 50.0f);
+    prog.setUniform("Spot.Cutoff", glm::radians(15.0f));
 }
 
 void SceneBasic_Uniform::compile()
@@ -83,31 +60,46 @@ void SceneBasic_Uniform::update( float t )
 
 void SceneBasic_Uniform::render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    //Set Material Uniform values
-    prog.setUniform("Material.Kd", 0.4f, 0.4f, 0.4f);
-    prog.setUniform("Material.Ka", 0.5f, 0.5f, 0.5f);
-    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Shininess", 180.0f);
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //Set up spotlight
+    vec4 lightPos = vec4(0.0f, 10.0f, 0.0f, 1.0f);
+    prog.setUniform("Spot.Position", vec4(view * lightPos));
+    mat3 normalMatrix = mat3(vec3(view[0]), vec3(view[1]), vec3(view[2]));
+    prog.setUniform("Spot.Direction", normalMatrix * vec3(-lightPos));
+    
+    //Set material uniforms for teapot
+    prog.setUniform("Material.Kd", 0.2f, 0.55f, 0.9f);
+    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+    prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
+    prog.setUniform("Material.Shininess", 100.0f);
+    //Handle positioning of teapot
     model = mat4(1.0f);
-    //model = glm::rotate(model, glm::radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+    model = glm::translate(model, vec3(0.0f, 0.0f, -2.0f));
+    //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
-    mesh->render();
+    SceneTeapot.render();
 
-    //Set Material Uniform values
-    prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Shininess", 180.0f);
-
+    //Set Material uniforms for Torus
+    prog.setUniform("Material.Kd", 0.2f, 0.55f, 0.9f);
+    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+    prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
+    prog.setUniform("Material.Shininess", 100.0f);
+    //Handle positioning of Torus
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, -0.45f, 0.0f));
+    model = glm::translate(model, vec3(-5.0f, 0.75f, 0.75f));
+    model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
+    setMatrices();
+    SceneTorus.render();
+
+    //Set Material Unifroms for Plane
+    prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    prog.setUniform("Material.Shininess", 180.0f);
+    model = mat4(1.0f);
     setMatrices();
     ScenePlane.render();
-
 }
 
 void SceneBasic_Uniform::resize(int w, int h)

@@ -11,9 +11,9 @@
 
 
 #include "helper/plane.h"
-//#include "helper/torus.h"
-//#include "helper/teapot.h"
-#include "helper/objmesh.h"
+#include "helper/torus.h"
+#include "helper/teapot.h"
+//#include "helper/objmesh.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -21,10 +21,10 @@ private:
     //GLuint vaoHandle;
     GLSLProgram prog;
     //float angle;
-    //Torus SceneTorus;
-    //Teapot SceneTeapot;
+    Torus SceneTorus;
+    Teapot SceneTeapot;
     Plane ScenePlane;
-    std::unique_ptr<ObjMesh> mesh;
+    //std::unique_ptr<ObjMesh> mesh;
 
     void compile();
 

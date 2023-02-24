@@ -7,12 +7,17 @@ layout (location = 0) out vec4 FragColor;
 
 
 //Light info
-uniform struct LightInfo{
+uniform struct SpotlightInfo
+{
     vec4 Position;
-    vec3 La; //Ambient
-    vec3 Ld; //Diffuse
-    vec3 Ls; //Specular
-    } lights[3];
+    vec3 La;
+    vec3 Ld;
+    vec3 Ls;
+    vec3 Direction;
+    float Exponent;
+    float Cutoff;
+
+} Spot;
 
 
 // Material info
@@ -25,37 +30,58 @@ uniform struct MaterialInfo{
 } Material;
 
 
-vec3 phong(int Light , vec3 n, vec4 pos){
+vec3 phong(vec3 n, vec4 pos){
     //Handle Ambient Lighting
-    vec3 ambient = lights[Light].La*Material.Ka;
+    vec3 ambient = Spot.La*Material.Ka;
+    vec3 diffuse= vec3(0);
+    vec3 spec = vec3(0);
 
-    vec3 s = normalize(vec3(lights[Light].Position-pos));
-    float sDotN = max(dot(s,n),0.0);
-    vec3 diffuse = lights[Light].Ld*Material.Kd *sDotN;
-    vec3 spec = vec3(0.0);
-    if(sDotN>0.0){
-        vec3 v = normalize(-pos.xyz);
-        vec3 r = reflect(-s,n);
-        spec = lights[Light].Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
+    vec3 s = normalize(vec3(Spot.Position-pos));
+    float cosAng = dot(-s,normalize(Spot.Direction));
+    float angle = acos(cosAng);
+    float spotScale = 0.0;
+
+    if (angle < Spot.Cutoff){
+        spotScale = pow(cosAng , Spot.Exponent);
+        float sDotN = max(dot(s,n),0.0);
+        vec3 diffuse = Spot.Ld*Material.Kd *sDotN;
+        vec3 spec = vec3(0.0);
+        if(sDotN>0.0){
+            vec3 v = normalize(-pos.xyz);
+            vec3 r = reflect(-s,n);
+            spec = Spot.Ls*Material.Ks*pow(max(dot(r,v),0.0),Material.Shininess);
+        }
     }
+
     
     return ambient+diffuse+spec;
 }
 
-vec3 blinnphong(int Light , vec3 n, vec4 pos){
+vec3 blinnphong(vec3 n, vec4 pos){
     //Handle Ambient Lighting
-    vec3 ambient = lights[Light].La*Material.Ka;
+    vec3 ambient = Spot.La*Material.Ka;
+    vec3 diffuse= vec3(0);
+    vec3 spec = vec3(0);
 
-    vec3 s = normalize(vec3(lights[Light].Position-pos));
-    float sDotN = max(dot(s,n),0.0);
-    vec3 diffuse = lights[Light].Ld*Material.Kd *sDotN;
-    vec3 spec = vec3(0.0);
-    if(sDotN>0.0){
-        vec3 v = normalize(-pos.xyz);
-        vec3 h = normalize(v+s);
-        spec = lights[Light].Ls*Material.Ks*pow(max(dot(h,v),0.0),Material.Shininess);
-    }
-    
+    vec3 s = normalize(vec3(Spot.Position-pos));
+
+    float cosAng = dot(-s,normalize(Spot.Direction));
+    float angle = acos(cosAng);
+    float spotScale = 0.0;
+
+    if (angle < Spot.Cutoff){
+        spotScale = pow(cosAng , Spot.Exponent);
+        float sDotN = max(dot(s,n),0.0);
+        diffuse = Spot.Ld*Material.Kd *sDotN;
+        spec = vec3(0.0);
+        if(sDotN>0.0){
+            vec3 v = normalize(-pos.xyz);
+            vec3 h = normalize(v+s);
+            spec = Spot.Ls*Material.Ks*pow(max(dot(h,v),0.0),Material.Shininess);
+        }
+
+
+    }   
     return ambient+diffuse+spec;
 }
 
@@ -63,10 +89,5 @@ vec3 blinnphong(int Light , vec3 n, vec4 pos){
 
 
 void main() {
-    vec3 Colour = vec3(0.0);
-    for (int i = 0; i<3; i++)
-    {
-        Colour +=blinnphong(i,camNorm,camPosition);
-    }
-    FragColor = vec4(Colour, 1.0);
+    FragColor = vec4(blinnphong(camNorm,camPosition), 1.0);
 }
