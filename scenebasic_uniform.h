@@ -20,7 +20,8 @@ class SceneBasic_Uniform : public Scene
 private:
     //GLuint vaoHandle;
     GLSLProgram prog;
-    //float angle;
+    float angle;
+    float tPrev;
     Torus SceneTorus;
     Teapot SceneTeapot;
     Plane ScenePlane;
