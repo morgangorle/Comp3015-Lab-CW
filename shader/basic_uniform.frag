@@ -19,6 +19,10 @@ uniform struct SpotlightInfo
 
 } Spot;
 
+const int level = 5;
+
+const float scaleFactor = 1.0/level;
+
 
 // Material info
 uniform struct MaterialInfo{
@@ -44,8 +48,8 @@ vec3 phong(vec3 n, vec4 pos){
     if (angle < Spot.Cutoff){
         spotScale = pow(cosAng , Spot.Exponent);
         float sDotN = max(dot(s,n),0.0);
-        vec3 diffuse = Spot.Ld*Material.Kd *sDotN;
-        vec3 spec = vec3(0.0);
+        diffuse = Spot.Ld*Material.Kd *sDotN;
+        spec = vec3(0.0);
         if(sDotN>0.0){
             vec3 v = normalize(-pos.xyz);
             vec3 r = reflect(-s,n);
@@ -72,7 +76,7 @@ vec3 blinnphong(vec3 n, vec4 pos){
     if (angle < Spot.Cutoff){
         spotScale = pow(cosAng , Spot.Exponent);
         float sDotN = max(dot(s,n),0.0);
-        diffuse = Spot.Ld*Material.Kd *sDotN;
+        diffuse = Spot.Ld*Material.Kd *(floor(sDotN* level)* scaleFactor);
         spec = vec3(0.0);
         if(sDotN>0.0){
             vec3 v = normalize(-pos.xyz);
