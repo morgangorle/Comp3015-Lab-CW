@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "helper/texture.h";
+
 #include <string>
 using std::string;
 
@@ -20,7 +22,7 @@ using glm::mat3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), ScenePlane(50.0f,50.0f,1,1) , SceneTeapot(14,glm::mat4(1.0f)){}
+SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), ScenePlane(50.0f,50.0f,1,1) , SceneCube(1.0f) {}
 
 
 
@@ -28,12 +30,17 @@ void SceneBasic_Uniform::initScene()
 {
     compile();
     glEnable(GL_DEPTH_TEST);
-    view = glm::lookAt(vec3(0.0f, 4.0f, 6.0f), vec3(0.0f, 2.00f, 0.0f), vec3(0.0f,
-        1.0f, 0.0f));
+    view = glm::lookAt(vec3(1.0f, 1.25f, 1.25f), vec3(0.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 0.0f));
     projection = mat4(1.0f);
     prog.setUniform("Light.La", vec3(0.5f));
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
+
+    GLuint texID =
+        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/brick1.jpg");
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texID);
 }
 
 void SceneBasic_Uniform::compile()
@@ -81,7 +88,7 @@ void SceneBasic_Uniform::render()
     //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
-    SceneTeapot.render();
+    SceneCube.render();
 
     //Set Material Unifroms for Plane
     prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
