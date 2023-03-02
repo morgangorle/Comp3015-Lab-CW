@@ -1,16 +1,17 @@
 #version 460
 
 layout (location = 0) in vec3 VertexPosition;
-layout (location = 1) in vec3 VertexNormal;
-layout (location = 2) in vec2 VertexTexCoord;
-layout (location = 3) in vec4 VertexTangent;
+//layout (location = 1) in vec3 VertexNormal;
+//layout (location = 2) in vec2 VertexTexCoord;
+//layout (location = 3) in vec4 VertexTangent;
 
 //out vec4 camPosition;
 //out vec3 camNorm;
-out vec2 TexCoord;
-out vec3 LightDir;
-out vec3 ViewDir;
-
+//out vec2 TexCoord;
+//out vec3 LightDir;
+//out vec3 ViewDir;
+out vec3 Vec;
+/*
 //Light info
 uniform struct lightinfo
 {
@@ -22,6 +23,11 @@ uniform struct lightinfo
 
 
 
+void getCamSpaceValues(out vec3 norm, out vec4 position){
+    norm = normalize(NormalMatrix*VertexNormal);
+    position = ModelViewMatrix * vec4(VertexPosition,1.0);
+}
+*/
 
 //Matrixes
 uniform mat4 ModelViewMatrix;
@@ -29,14 +35,9 @@ uniform mat3 NormalMatrix;
 uniform mat4 MVP;
 uniform mat4 ProjectionMatrix;
 
-
-void getCamSpaceValues(out vec3 norm, out vec4 position){
-    norm = normalize(NormalMatrix*VertexNormal);
-    position = ModelViewMatrix * vec4(VertexPosition,1.0);
-}
-
 void main()
 {
+    /*
     TexCoord = VertexTexCoord;
     //getCamSpaceValues(camNorm,camPosition);
 
@@ -57,6 +58,9 @@ void main()
     vec3 pos = vec3( ModelViewMatrix * vec4(VertexPosition,1.0) );
     LightDir = toObjectLocal * (Light.Position.xyz - pos);
     ViewDir = toObjectLocal * normalize(-pos);
+    */
+
+    Vec = VertexPosition;
 
     gl_Position = MVP*vec4(VertexPosition,1.0);
 

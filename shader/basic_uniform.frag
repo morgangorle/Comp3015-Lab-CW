@@ -2,16 +2,19 @@
 
 //in vec4 camPosition;
 //in vec3 camNorm;
-in vec2 TexCoord;
-in vec3 LightDir;
-in vec3 ViewDir;
+//in vec2 TexCoord;
+//in vec3 LightDir;
+//in vec3 ViewDir;
+in vec3 Vec;
 
-layout(binding=0) uniform sampler2D ColorTex;
-layout(binding=1) uniform sampler2D NormalMapTex;
+//layout(binding=0) uniform sampler2D ColorTex;
+//layout(binding=1) uniform sampler2D NormalMapTex;
+
+layout(binding=0) uniform samplerCube skyBoxTex;
 layout (location = 0) out vec4 FragColor;
 
 
-
+/*
 //Light info
 uniform struct lightinfo
 {
@@ -29,7 +32,7 @@ uniform struct MaterialInfo{
     float Shininess; //Shininess factor
 
 } Material;
-/*
+
 vec3 blinnphong(vec3 n, vec4 pos){
     vec3 texColour = texture(baseTex,TexCoord).rgb;
     
@@ -50,7 +53,7 @@ vec3 blinnphong(vec3 n, vec4 pos){
    }
     return ambient+diffuse+spec;
 }
-*/
+
 // A version with no Pos
 vec3 blinnphong(vec3 n){
     vec3 texColour = texture(ColorTex,TexCoord).rgb;
@@ -72,11 +75,13 @@ vec3 blinnphong(vec3 n){
    }
     return ambient+diffuse+spec;
 }
-
+*/
 
 
 void main() {
-    vec3 norm = texture(NormalMapTex, TexCoord).xyz;
-    norm.xy = 2.0 * norm.xy - 1.0;
-    FragColor = vec4(blinnphong(norm), 1.0);
+    vec3 texColour = texture(skyBoxTex, normalize(Vec)).rgb;
+    texColour = pow(texColour, vec3(1.0/2.2));
+    //norm.xy = 2.0 * norm.xy - 1.0;
+    //FragColor = vec4(blinnphong(norm), 1.0);
+    FragColor = vec4(texColour,1);
 }

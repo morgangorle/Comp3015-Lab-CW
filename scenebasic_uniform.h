@@ -14,7 +14,8 @@
 //#include "helper/cube.h"
 //#include "helper/torus.h"
 //#include "helper/teapot.h"
-#include "helper/objmesh.h"
+//#include "helper/objmesh.h"
+#include "helper/skybox.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -23,11 +24,13 @@ private:
     GLSLProgram prog;
     float angle;
     float tPrev;
+    float rotSpeed;
     //Torus SceneTorus;
     //Teapot SceneTeapot;
     //Cube SceneCube;
     //Plane ScenePlane;
-    std::unique_ptr<ObjMesh> ogre;
+    //std::unique_ptr<ObjMesh> ogre;
+    SkyBox sky;
 
     void compile();
 
