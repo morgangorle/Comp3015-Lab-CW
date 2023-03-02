@@ -22,7 +22,14 @@ using glm::mat3;
 using glm::mat4;
 GLfloat angle = 0.0f;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : tPrev(0), ScenePlane(50.0f,50.0f,1,1) , SceneCube(1.0f) {}
+SceneBasic_Uniform::SceneBasic_Uniform()
+{
+    //ScenePlane(50.0f, 50.0f, 1, 1)
+    tPrev = 0;
+    ogre = ObjMesh::load("media/bs_ears.obj", false, true);
+    //SceneCube(1.0f)
+
+}
 
 
 
@@ -30,22 +37,22 @@ void SceneBasic_Uniform::initScene()
 {
     compile();
     glEnable(GL_DEPTH_TEST);
-    view = glm::lookAt(vec3(1.0f, 1.25f, 1.25f), vec3(0.0f, 0.0f, 0.0f),
+    view = glm::lookAt(vec3(-1.0f, 0.25f, 2.0f), vec3(0.0f, 0.0f, 0.0f),
         vec3(0.0f, 1.0f, 0.0f));
     projection = mat4(1.0f);
     prog.setUniform("Light.La", vec3(0.5f));
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
 
-    GLuint baseTex =
-        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/brick1.jpg");
-    GLuint alphaTex =
-        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/moss.png");
+    GLuint ColorTex =
+        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/ogre_diffuse.png");
+    GLuint NormalMapTex =
+        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/ogre_normalmap.png");
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, baseTex);
+    glBindTexture(GL_TEXTURE_2D, ColorTex);
     //CHANGE ACTIVE TEXTURE
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, alphaTex);
+    glBindTexture(GL_TEXTURE_2D, NormalMapTex);
 }
 
 void SceneBasic_Uniform::compile()
@@ -91,18 +98,18 @@ void SceneBasic_Uniform::render()
     model = mat4(1.0f);
     //model = glm::translate(model, vec3(dist* 0.6f - 1.0f, 7.5f, -dist));
     //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
-    SceneCube.render();
+    ogre->render();
 
     //Set Material Unifroms for Plane
-    prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
-    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
-    prog.setUniform("Material.Shininess", 180.0f);
-    model = mat4(1.0f);
-    setMatrices();
-    ScenePlane.render();
+    //prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
+    //prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    //prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    //prog.setUniform("Material.Shininess", 180.0f);
+    //model = mat4(1.0f);
+    //setMatrices();
+    //ScenePlane.render();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)

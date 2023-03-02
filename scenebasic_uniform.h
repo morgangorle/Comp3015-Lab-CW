@@ -10,11 +10,11 @@
 #include "helper/glslprogram.h"
 
 
-#include "helper/plane.h"
-#include "helper/cube.h"
+//#include "helper/plane.h"
+//#include "helper/cube.h"
 //#include "helper/torus.h"
 //#include "helper/teapot.h"
-//#include "helper/objmesh.h"
+#include "helper/objmesh.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -25,9 +25,9 @@ private:
     float tPrev;
     //Torus SceneTorus;
     //Teapot SceneTeapot;
-    Cube SceneCube;
-    Plane ScenePlane;
-    //std::unique_ptr<ObjMesh> mesh;
+    //Cube SceneCube;
+    //Plane ScenePlane;
+    std::unique_ptr<ObjMesh> ogre;
 
     void compile();
 
