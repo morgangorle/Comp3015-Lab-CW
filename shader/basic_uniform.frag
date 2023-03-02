@@ -4,8 +4,8 @@ in vec4 camPosition;
 in vec3 camNorm;
 in vec2 TexCoord;
 
-layout (binding = 0) uniform sampler2D Tex1;
-layout (binding = 1) uniform sampler2D Tex2;
+layout (binding = 0) uniform sampler2D baseTex;
+layout (binding = 1) uniform sampler2D alphaTex;
 layout (location = 0) out vec4 FragColor;
 
 
@@ -29,10 +29,7 @@ uniform struct MaterialInfo{
 } Material;
 
 vec3 blinnphong(vec3 n, vec4 pos){
-    vec4 brickColour = texture(Tex1,TexCoord);
-    vec4 mossColour = texture(Tex2,TexCoord);
-
-    vec3 texColour = mix(brickColour.rgb,mossColour.rgb,mossColour.a);
+    vec3 texColour = texture(baseTex,TexCoord).rgb;
     
     //Handle Ambient Lighting
     vec3 ambient = Light.La*Material.Ka * texColour;
@@ -56,5 +53,17 @@ vec3 blinnphong(vec3 n, vec4 pos){
 
 
 void main() {
-    FragColor = vec4(blinnphong(camNorm,camPosition), 1.0);
+    vec4 alphaMap = texture(alphaTex, TexCoord);
+    if(alphaMap.a < 0.15){
+        discard;
+    }
+    else{
+        if(gl_FrontFacing){
+            FragColor = vec4(blinnphong(camNorm,camPosition), 1.0);
+        }
+        else{
+            FragColor = vec4(blinnphong(-camNorm,camPosition), 1.0);
+
+        }
+    }
 }
