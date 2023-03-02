@@ -21,12 +21,13 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : sky(100.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() : ScenePlane(50.0f, 50.0f, 1, 1), SceneTeapot(14, mat4(1.0f))
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
     angle = 0.0f;
     rotSpeed = (glm::pi<float>() / 8.0f);
+    //sky(100.0f)
     //ogre = ObjMesh::load("media/bs_ears.obj", false, true);
     //SceneCube(1.0f)
 
@@ -61,13 +62,32 @@ void SceneBasic_Uniform::initScene()
     compile();
     glEnable(GL_DEPTH_TEST);
     projection = mat4(1.0f);
-    angle = glm::radians(90.0f); //set the initial angle
-    //extract the cube texture
-    GLuint cubeTex =
-        Texture::loadHdrCubeMap("media/texture/cube/pisa-hdr/pisa");
-            //activate and bindtexture
+    angle = glm::radians(90.0f);
+    //set up things for the projector matrix
+    vec3 projPos = vec3(2.0f, 5.0f, 5.0f);
+    vec3 projAt = vec3(-2.0f, -4.0f, 0.0f);
+    vec3 projUp = vec3(0.0f, 1.0f, 0.0f);
+    mat4 projView = glm::lookAt(projPos, projAt, projUp);
+    mat4 projProj = glm::perspective(glm::radians(30.0f), 1.0f, 0.2f,
+        1000.0f);
+    mat4 bias = glm::translate(mat4(1.0f), vec3(0.5f));
+    bias = glm::scale(bias, vec3(0.5f));
+    prog.setUniform("ProjectorMatrix", bias * projProj * projView);
+
+    // Load texture file
+    GLuint flowerTex =
+        Texture::loadTexture("media/texture/flower.png");
+    //set up and send the projected texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeTex);
+    glBindTexture(GL_TEXTURE_2D, flowerTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    //Set up the lightUniform
+    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    prog.setUniform("Light.La", vec3(0.2f));
+    prog.setUniform("Light.Ld", vec3(1.0f));
+    prog.setUniform("Light.Ls", vec3(1.0f));
 }
 
 void SceneBasic_Uniform::compile()
@@ -130,14 +150,34 @@ void SceneBasic_Uniform::render()
 */
 void SceneBasic_Uniform::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //set up your camera
     vec3 cameraPos = vec3(7.0f * cos(angle), 2.0f, 7.0f * sin(angle));
     view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f,
         0.0f));
-    // Draw sky
-    prog.use();
+
+    //set up your material uniforms
+    prog.setUniform("Material.Kd", 0.5f, 0.2f, 0.1f);
+    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Shininess", 100.0f);
+
+    //set up and render the teapot
     model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -1.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f,
+     //   1.0f));
     setMatrices();
-    sky.render();
+    SceneTeapot.render();
+
+    //set up the material uniforms for plane and render the plane
+    prog.setUniform("Material.Kd", 0.4f, 0.4f, 0.4f);
+    prog.setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
+    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Shininess", 1.0f);
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -0.75f, 0.0f));
+    setMatrices();
+    ScenePlane.render();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -153,10 +193,11 @@ void SceneBasic_Uniform::setMatrices()
 {
     glm::mat4 mv = model * view;
 
+    prog.setUniform("ModelMatrix", model);
     prog.setUniform("ModelViewMatrix", mv);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]),vec3(mv[1]),vec3(mv[2])));
     prog.setUniform("MVP", projection * mv);
-    prog.setUniform("ProjectionMatrix", projection);
+    //prog.setUniform("ProjectionMatrix", projection);
 
 
 }

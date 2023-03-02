@@ -10,12 +10,12 @@
 #include "helper/glslprogram.h"
 
 
-//#include "helper/plane.h"
+#include "helper/plane.h"
 //#include "helper/cube.h"
 //#include "helper/torus.h"
-//#include "helper/teapot.h"
+#include "helper/teapot.h"
 //#include "helper/objmesh.h"
-#include "helper/skybox.h"
+//#include "helper/skybox.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -26,11 +26,11 @@ private:
     float tPrev;
     float rotSpeed;
     //Torus SceneTorus;
-    //Teapot SceneTeapot;
+    Teapot SceneTeapot;
     //Cube SceneCube;
-    //Plane ScenePlane;
+    Plane ScenePlane;
     //std::unique_ptr<ObjMesh> ogre;
-    SkyBox sky;
+    //SkyBox sky;
 
     void compile();
 

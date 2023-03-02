@@ -1,20 +1,16 @@
 #version 460
 
-//in vec4 camPosition;
-//in vec3 camNorm;
-//in vec2 TexCoord;
-//in vec3 LightDir;
-//in vec3 ViewDir;
-in vec3 Vec;
 
-//layout(binding=0) uniform sampler2D ColorTex;
-//layout(binding=1) uniform sampler2D NormalMapTex;
+in vec3 EyeNormal;
+in vec4 EyePosition;
+in vec4 ProjTexCoord;
 
-layout(binding=0) uniform samplerCube skyBoxTex;
-layout (location = 0) out vec4 FragColor;
+layout (binding = 0) uniform sampler2D ProjectorTex;
+
+layout (location = 0) out vec4 FragColour;
 
 
-/*
+
 //Light info
 uniform struct lightinfo
 {
@@ -32,19 +28,16 @@ uniform struct MaterialInfo{
     float Shininess; //Shininess factor
 
 } Material;
-
 vec3 blinnphong(vec3 n, vec4 pos){
-    vec3 texColour = texture(baseTex,TexCoord).rgb;
-    
     //Handle Ambient Lighting
-    vec3 ambient = Light.La*Material.Ka * texColour;
+    vec3 ambient = Light.La*Material.Ka;
     vec3 diffuse= vec3(0);
     vec3 spec = vec3(0);
 
     vec3 s = normalize(vec3(Light.Position-pos));
 
     float sDotN = max(dot(s,n),0.0);
-    diffuse = Light.Ld*Material.Kd *sDotN * texColour;
+    diffuse = Light.Ld*Material.Kd *sDotN;
     spec = vec3(0.0);
    if(sDotN>0.0){
      vec3 v = normalize(-pos.xyz);
@@ -53,7 +46,7 @@ vec3 blinnphong(vec3 n, vec4 pos){
    }
     return ambient+diffuse+spec;
 }
-
+/*
 // A version with no Pos
 vec3 blinnphong(vec3 n){
     vec3 texColour = texture(ColorTex,TexCoord).rgb;
@@ -79,9 +72,12 @@ vec3 blinnphong(vec3 n){
 
 
 void main() {
-    vec3 texColour = texture(skyBoxTex, normalize(Vec)).rgb;
-    texColour = pow(texColour, vec3(1.0/2.2));
-    //norm.xy = 2.0 * norm.xy - 1.0;
-    //FragColor = vec4(blinnphong(norm), 1.0);
-    FragColor = vec4(texColour,1);
+    vec3 colour = blinnphong(EyeNormal,normalize(EyePosition));
+    vec3 projTexColor = vec3(0.0);
+    if( ProjTexCoord.z > 0.0 ){
+        projTexColor = textureProj( ProjectorTex, ProjTexCoord ).rgb;
+    
+    }
+
+    FragColour = vec4(colour + projTexColor * 0.5, 1);
 }
