@@ -36,7 +36,7 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ls", vec3(0.9f));
     prog.setUniform("Fog.MaxDist", 30.0f);
     prog.setUniform("Fog.MinDist", 10.0f);
-    prog.setUniform("Fog.Colour", vec3(1.0f,0.0f,0.0f));
+    prog.setUniform("Fog.Colour", vec3(0.5f,0.5f,0.5f));
 }
 
 void SceneBasic_Uniform::compile()
@@ -80,15 +80,18 @@ void SceneBasic_Uniform::render()
     prog.setUniform("Material.Shininess", 100.0f);
 
 
-    //float dist = 0.0f;
-    //for (int i = 0; i < 5; i ++)
-    //Handle positioning of teapot
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, 0.0f, -2.0f));
-    //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
-    setMatrices();
-    SceneTeapot.render();
+    float dist = 0.0f;
+    for (int i = 0; i < 5; i++) {
+        //Handle positioning of teapot
+        model = mat4(1.0f);
+        model = glm::translate(model, vec3(dist* 0.6f - 1.0f, 7.5f, -dist));
+        //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
+        setMatrices();
+        SceneTeapot.render();
+        dist += 7.0f;
+
+    }
 
     //Set Material Unifroms for Plane
     prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
