@@ -28,14 +28,15 @@ void SceneBasic_Uniform::initScene()
 {
     compile();
     glEnable(GL_DEPTH_TEST);
-    view = glm::lookAt(vec3(5.0f, 5.0f, 7.5f), vec3(0.0f, 0.75f, 0.0f), vec3(0.0f,
+    view = glm::lookAt(vec3(0.0f, 4.0f, 6.0f), vec3(0.0f, 2.00f, 0.0f), vec3(0.0f,
         1.0f, 0.0f));
     projection = mat4(1.0f);
     prog.setUniform("Light.La", vec3(0.5f));
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
-    //prog.setUniform("Light.Exponent", 50.0f);
-    //prog.setUniform("Light.Cutoff", glm::radians(15.0f));
+    prog.setUniform("Fog.MaxDist", 30.0f);
+    prog.setUniform("Fog.MinDist", 10.0f);
+    prog.setUniform("Fog.Colour", vec3(1.0f,0.0f,0.0f));
 }
 
 void SceneBasic_Uniform::compile()
@@ -77,6 +78,10 @@ void SceneBasic_Uniform::render()
     prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
     prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
     prog.setUniform("Material.Shininess", 100.0f);
+
+
+    //float dist = 0.0f;
+    //for (int i = 0; i < 5; i ++)
     //Handle positioning of teapot
     model = mat4(1.0f);
     model = glm::translate(model, vec3(0.0f, 0.0f, -2.0f));
