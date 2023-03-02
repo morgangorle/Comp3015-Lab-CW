@@ -22,7 +22,7 @@ private:
     GLSLProgram prog;
     float angle;
     float tPrev;
-    Torus SceneTorus;
+    //Torus SceneTorus;
     Teapot SceneTeapot;
     Plane ScenePlane;
     //std::unique_ptr<ObjMesh> mesh;
