@@ -5,6 +5,7 @@ in vec3 camNorm;
 in vec2 TexCoord;
 
 layout (binding = 0) uniform sampler2D Tex1;
+layout (binding = 1) uniform sampler2D Tex2;
 layout (location = 0) out vec4 FragColor;
 
 
@@ -28,7 +29,10 @@ uniform struct MaterialInfo{
 } Material;
 
 vec3 blinnphong(vec3 n, vec4 pos){
-    vec3 texColour = texture(Tex1,TexCoord).rgb;
+    vec4 brickColour = texture(Tex1,TexCoord);
+    vec4 mossColour = texture(Tex2,TexCoord);
+
+    vec3 texColour = mix(brickColour.rgb,mossColour.rgb,mossColour.a);
     
     //Handle Ambient Lighting
     vec3 ambient = Light.La*Material.Ka * texColour;

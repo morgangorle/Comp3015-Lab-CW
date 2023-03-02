@@ -37,10 +37,15 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
 
-    GLuint texID =
+    GLuint tex1 =
         Texture::loadTexture("../Comp3015-Lab-Work/media/texture/brick1.jpg");
+    GLuint tex2 =
+        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/moss.png");
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texID);
+    glBindTexture(GL_TEXTURE_2D, tex1);
+    //CHANGE ACTIVE TEXTURE
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, tex2);
 }
 
 void SceneBasic_Uniform::compile()
