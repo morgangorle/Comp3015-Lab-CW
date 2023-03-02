@@ -77,12 +77,12 @@ void SceneBasic_Uniform::render()
     //mat3 normalMatrix = mat3(vec3(view[0]), vec3(view[1]), vec3(view[2]));
     //prog.setUniform("Light.Direction", normalMatrix * vec3(-lightPos));
     
-    //Set material uniforms for teapot
-    prog.setUniform("Material.Kd", 0.2f, 0.55f, 0.9f);
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-    prog.setUniform("Material.Ka", 0.2f * 0.3f, 0.55f * 0.3f, 0.9f * 0.3f);
+    //Set material uniforms for cube
+    prog.setUniform("Material.Kd", 1.0f, 1.0f, 1.0f);
+    prog.setUniform("Material.Ks", 0.05f, 0.05f, 0.05f);
+    prog.setUniform("Material.Ka", 0.5f, 0.5f, 0.5f);
     prog.setUniform("Material.Shininess", 100.0f);
-    //Handle positioning of teapot
+    //Handle positioning of cube
     model = mat4(1.0f);
     //model = glm::translate(model, vec3(dist* 0.6f - 1.0f, 7.5f, -dist));
     //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
