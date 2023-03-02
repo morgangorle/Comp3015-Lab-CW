@@ -15,15 +15,6 @@ uniform struct lightinfo
     vec3 Ls;
 } Light;
 
-
-uniform struct FogInfo {
-    float MaxDist;
-    float MinDist;
-    vec3 Colour;
-
-} Fog;
-
-
 // Material info
 uniform struct MaterialInfo{
     vec3 Ka; //Ambient
@@ -78,17 +69,6 @@ vec3 blinnphong(vec3 n, vec4 pos){
 
 
 
-//void main() {
-    //FragColor = vec4(blinnphong(camNorm,camPosition), 1.0);
-//}
-
-void main(){
-    float dist = abs( camPosition.z);
-
-    float fogFactor = (Fog.MaxDist-dist) / (Fog.MaxDist-Fog.MinDist);
-    fogFactor = clamp(fogFactor,0.0,1.0);
-    vec3 shadeColour = blinnphong(normalize(camNorm),camPosition);
-    vec3 colour = mix(Fog.Colour, shadeColour,fogFactor);
-    FragColor = vec4(colour,1.0);
-
+void main() {
+    FragColor = vec4(blinnphong(camNorm,camPosition), 1.0);
 }
