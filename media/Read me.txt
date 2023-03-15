@@ -1,0 +1,22 @@
+This is Cartoon aztec chest Polygonal(1 model)
+
+Create in Blender 3d v 2.82.7
+
+Models:
+
+aztec chest- 1
+File formats:
+
+Blender 3d v 3.1.2
+OBJ; MTL
+Fbx
+Gltf
+The preview images were rendered in Blender 3d (Cycles; 1024Samples)
+
+Vertices: 1077; Polygons: 1417
+
+Created by Tykryk
+
+Thank you:)
+
+Downloaded from https://www.turbosquid.com/3d-models/lowpoly-cartoon-aztec-chest-polygonal-3d-2028078#
