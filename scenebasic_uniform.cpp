@@ -29,7 +29,7 @@ SceneBasic_Uniform::SceneBasic_Uniform() : SceneCube(1.0f)
     angle = 0.0f;
     rotSpeed = (glm::pi<float>() / 8.0f);
     //sky(100.0f)
-    //ogre = ObjMesh::load("media/bs_ears.obj", false, true);
+    chest = ObjMesh::load("media/chest.obj", false, false);
     //SceneCube(1.0f)
     //SceneTeapot(14, mat4(1.0f))
 
@@ -125,7 +125,8 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
-    SceneCube.render();
+    //SceneCube.render();
+    chest->render();
 }
 
 void SceneBasic_Uniform::setupFBO() {

@@ -31,6 +31,7 @@ private:
     //Teapot SceneTeapot;
     Cube SceneCube;
     //Plane ScenePlane;
+    std::unique_ptr<ObjMesh> chest;
     std::unique_ptr<ObjMesh> spot;
     //SkyBox sky;
 
