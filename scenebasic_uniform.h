@@ -10,11 +10,11 @@
 #include "helper/glslprogram.h"
 
 
-//#include "helper/plane.h"
-#include "helper/cube.h"
-//#include "helper/torus.h"
-//#include "helper/teapot.h"
-#include "helper/objmesh.h"
+#include "helper/plane.h"
+//#include "helper/cube.h"
+#include "helper/torus.h"
+#include "helper/teapot.h"
+//#include "helper/objmesh.h"
 //#include "helper/skybox.h"
 
 class SceneBasic_Uniform : public Scene
@@ -22,16 +22,16 @@ class SceneBasic_Uniform : public Scene
 private:
     //GLuint vaoHandle;
     GLSLProgram prog;
-    GLuint fboHandle;
+    GLuint fsQuad, fboHandle, renderTex;
 
     float angle;
     float tPrev;
     float rotSpeed; 
-    //Torus SceneTorus;
-    //Teapot SceneTeapot;
-    Cube SceneCube;
-    //Plane ScenePlane;
-    std::unique_ptr<ObjMesh> spot;
+    Torus SceneTorus;
+    Teapot SceneTeapot;
+    //Cube SceneCube;
+    Plane ScenePlane;
+    //std::unique_ptr<ObjMesh> spot;
     //SkyBox sky;
 
     void compile();
@@ -45,8 +45,10 @@ public:
     void resize(int, int);
     void setMatrices();
     void setupFBO();
-    void renderToTexture();
-    void renderScene();
+    //void renderToTexture();
+    //void renderScene();
+    void pass1();
+    void pass2();
 };
 
 #endif // SCENEBASIC_UNIFORM_H
