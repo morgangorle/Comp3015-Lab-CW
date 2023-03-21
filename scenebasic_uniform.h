@@ -21,6 +21,7 @@ private:
     //GLuint vaoHandle;
     GLSLProgram prog;
     GLuint fboHandle;
+    GLuint sceneHandle;
 
     float angle;
     float tPrev;

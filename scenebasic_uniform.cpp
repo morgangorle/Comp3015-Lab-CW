@@ -86,7 +86,7 @@ void SceneBasic_Uniform::render()
     //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //renderNoSpot();
     //render to texture
-    renderToTexture();
+    //renderToTexture();
     //flush the buffer
     glFlush();
     //unbind the write buffer and bind the default buffer
@@ -118,6 +118,8 @@ void SceneBasic_Uniform::setMatrices()
 }
 
 void SceneBasic_Uniform::renderScene() {
+    // Render all items with no spot item first
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
     prog.setUniform("RenderTex", 0);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,49 +131,9 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
-    chest->render();
     ScenePlane.render();
-}
-
-
-void SceneBasic_Uniform::setupFBO() {
-    // Generate and bind the framebuffer
-    glGenFramebuffers(1, &fboHandle);
+    glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
-    // Create the texture object
-    GLuint renderTex;
-    glGenTextures(1, &renderTex);
-    glActiveTexture(GL_TEXTURE0); // Use texture unit 0
-    glBindTexture(GL_TEXTURE_2D, renderTex);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 512, 512);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // Bind the texture to the FBO
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-        renderTex, 0);
-    // Create the depth buffer
-    GLuint depthBuf;
-    glGenRenderbuffers(1, &depthBuf);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuf);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);
-    // Bind the depth buffer to the FBO
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER, depthBuf);
-    // Set the targets for the fragment output variables
-    GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, drawBuffers);
-    GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (result == GL_FRAMEBUFFER_COMPLETE) {
-        cout << "Framebuffer is complete" << endl;
-    }
-    else {
-        cout << "Framebuffer error: " << result << endl;
-    }
-    // Unbind the framebuffer, and revert to default framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void SceneBasic_Uniform::renderToTexture() {
     prog.setUniform("RenderTex", 1);
     glViewport(0, 0, 512, 512);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -184,4 +146,93 @@ void SceneBasic_Uniform::renderToTexture() {
     model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
     spot->render();
+    glFlush();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+    prog.setUniform("RenderTex", 0);
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+    projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.3f, 100.0f);
+    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    prog.setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
+    prog.setUniform("Material.Shininess", 1.0f);
+    model = mat4(1.0f);
+    setMatrices();
+    chest->render();
 }
+
+
+void SceneBasic_Uniform::setupFBO() {
+    // Generate and bind the framebuffer
+    glGenFramebuffers(1, &fboHandle);
+    glGenFramebuffers(2, &sceneHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    // Create the texture object
+    GLuint renderTex;
+    glGenTextures(1, &renderTex);
+    glActiveTexture(GL_TEXTURE0); // Use texture unit 0
+    glBindTexture(GL_TEXTURE_2D, renderTex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 512, 512);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Bind the texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        renderTex, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        renderTex, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    // Create the depth buffer
+    GLuint depthBuf;
+    glGenRenderbuffers(1, &depthBuf);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuf);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 512, 512);
+    // Bind the depth buffer to the FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_RENDERBUFFER, depthBuf);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_RENDERBUFFER, depthBuf);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    // Set the targets for the fragment output variables
+    GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, drawBuffers);
+    GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (result == GL_FRAMEBUFFER_COMPLETE) {
+        cout << "Framebuffer is complete" << endl;
+    }
+    else {
+        cout << "Framebuffer error: " << result << endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
+    GLenum drawBuffers2[] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, drawBuffers2);
+    GLenum result2 = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (result2 == GL_FRAMEBUFFER_COMPLETE) {
+        cout << "Framebuffer is complete" << endl;
+    }
+    else {
+        cout << "Framebuffer error: " << result << endl;
+    }
+    // Unbind the framebuffer, and revert to default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+//void SceneBasic_Uniform::renderToTexture() {
+  //  prog.setUniform("RenderTex", 1);
+   // glViewport(0, 0, 512, 512);
+   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   // view = glm::lookAt(vec3(0.0f, 0.0f, 2.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+   // projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.3f, 100.0f);
+   // prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+   // prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+   // prog.setUniform("Material.Shininess", 100.0f);
+   // model = mat4(1.0f);
+   // model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
+   // setMatrices();
+   // spot->render();
+//}
