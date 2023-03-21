@@ -10,10 +10,8 @@
 #include "helper/glslprogram.h"
 
 
-//#include "helper/plane.h"
+#include "helper/plane.h"
 #include "helper/cube.h"
-//#include "helper/torus.h"
-//#include "helper/teapot.h"
 #include "helper/objmesh.h"
 //#include "helper/skybox.h"
 
@@ -27,10 +25,8 @@ private:
     float angle;
     float tPrev;
     float rotSpeed; 
-    //Torus SceneTorus;
-    //Teapot SceneTeapot;
     Cube SceneCube;
-    //Plane ScenePlane;
+    Plane ScenePlane;
     std::unique_ptr<ObjMesh> chest;
     std::unique_ptr<ObjMesh> spot;
     //SkyBox sky;

@@ -22,7 +22,7 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneCube(1.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() : SceneCube(1.0f) , ScenePlane(5.0f, 5.0f, 1, 1)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
@@ -81,6 +81,10 @@ void SceneBasic_Uniform::render()
 {
     //bind the buffer
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    //Render everything that doesn't want the Spot item on it;
+    //glFlush();
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //renderNoSpot();
     //render to texture
     renderToTexture();
     //flush the buffer
@@ -125,9 +129,10 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
-    //SceneCube.render();
     chest->render();
+    ScenePlane.render();
 }
+
 
 void SceneBasic_Uniform::setupFBO() {
     // Generate and bind the framebuffer
