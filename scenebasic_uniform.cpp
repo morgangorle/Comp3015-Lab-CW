@@ -22,7 +22,7 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneCube(1.0f) , ScenePlane(5.0f, 5.0f, 1, 1)
+SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(5.0f, 5.0f, 1, 1)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
@@ -118,8 +118,13 @@ void SceneBasic_Uniform::setMatrices()
 }
 
 void SceneBasic_Uniform::renderScene() {
-    // Render all items with no spot item first
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
+    prog.setUniform("isSpot", 1);
+    glFlush();
+    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    renderToTexture();
+    glFlush();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     prog.setUniform("RenderTex", 0);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,44 +136,17 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
-    ScenePlane.render();
-    glFlush();
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
-    prog.setUniform("RenderTex", 1);
-    glViewport(0, 0, 512, 512);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    view = glm::lookAt(vec3(0.0f, 0.0f, 2.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.3f, 100.0f);
-    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-    prog.setUniform("Material.Shininess", 100.0f);
-    model = mat4(1.0f);
-    model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
-    setMatrices();
-    spot->render();
-    glFlush();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-    prog.setUniform("RenderTex", 0);
-    glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.3f, 100.0f);
-    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    prog.setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
-    prog.setUniform("Material.Shininess", 1.0f);
-    model = mat4(1.0f);
-    setMatrices();
     chest->render();
+    prog.setUniform("isSpot", 0);
+    ScenePlane.render();
+
 }
 
 
 void SceneBasic_Uniform::setupFBO() {
     // Generate and bind the framebuffer
     glGenFramebuffers(1, &fboHandle);
-    glGenFramebuffers(2, &sceneHandle);
+    glGenFramebuffers(1, &sceneHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     // Create the texture object
@@ -222,17 +200,17 @@ void SceneBasic_Uniform::setupFBO() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-//void SceneBasic_Uniform::renderToTexture() {
-  //  prog.setUniform("RenderTex", 1);
-   // glViewport(0, 0, 512, 512);
-   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   // view = glm::lookAt(vec3(0.0f, 0.0f, 2.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-   // projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.3f, 100.0f);
-   // prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-   // prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-   // prog.setUniform("Material.Shininess", 100.0f);
-   // model = mat4(1.0f);
-   // model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
-   // setMatrices();
-   // spot->render();
-//}
+void SceneBasic_Uniform::renderToTexture() {
+    prog.setUniform("RenderTex", 1);
+    glViewport(0, 0, 512, 512);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    view = glm::lookAt(vec3(0.0f, 0.0f, 2.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+    projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.3f, 100.0f);
+    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+    prog.setUniform("Material.Shininess", 100.0f);
+    model = mat4(1.0f);
+    model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
+    setMatrices();
+    spot->render();
+}

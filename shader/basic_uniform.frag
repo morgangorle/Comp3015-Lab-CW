@@ -8,6 +8,7 @@ in vec2 TexCoord;
 layout (location = 0) out vec4 FragColour;
 
 uniform sampler2D RenderTex;
+uniform int isSpot;
 
 
 
@@ -30,7 +31,7 @@ uniform struct MaterialInfo{
 } Material;
 
 
-vec3 blinnphong(vec3 n, vec4 pos){
+vec3 blinnphongTex(vec3 n, vec4 pos){
     //Handle Ambient Lighting
     vec3 texColour = texture(RenderTex, TexCoord).rgb;
 
@@ -47,8 +48,41 @@ vec3 blinnphong(vec3 n, vec4 pos){
     return ambient+diffuse+spec;
 }
 
+vec3 blinnphong(vec3 n, vec4 pos){
+    //Handle Ambient Lighting
+
+    vec3 ambient = Light.La;
+    vec3 s = normalize(vec3(Light.Position.xyz-pos.xyz));
+    float sDotN = max(dot(s,n),0.0);
+    vec3 diffuse= Light.Ld * sDotN * Material.Kd;
+    vec3 spec = vec3(0.0);
+   if(sDotN>0.0){
+     vec3 v = normalize(-pos.xyz);
+     vec3 h = normalize(v+s);
+     spec = Material.Ks*pow(max(dot(h,n),0.0),Material.Shininess);
+   }
+    return ambient+diffuse+spec;
+}
+
+vec4 spot()
+{
+    return vec4(blinnphongTex(Normal,Position), 1.0);
+}
+
+vec4 noSpot()
+{
+    return vec4(blinnphong(Normal,Position), 1.0);
+}
+
 
 void main() {
 
-    FragColour = vec4(blinnphong(Normal,Position), 1.0);
+    if(isSpot == 0)
+    {
+        FragColour = noSpot();
+    }
+    else
+    {
+        FragColour = spot();
+    }
 }

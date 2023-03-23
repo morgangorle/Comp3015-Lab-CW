@@ -11,7 +11,6 @@
 
 
 #include "helper/plane.h"
-#include "helper/cube.h"
 #include "helper/objmesh.h"
 //#include "helper/skybox.h"
 
@@ -26,7 +25,6 @@ private:
     float angle;
     float tPrev;
     float rotSpeed; 
-    Cube SceneCube;
     Plane ScenePlane;
     std::unique_ptr<ObjMesh> chest;
     std::unique_ptr<ObjMesh> spot;
