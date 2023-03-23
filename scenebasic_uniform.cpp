@@ -146,8 +146,6 @@ void SceneBasic_Uniform::renderScene() {
 void SceneBasic_Uniform::setupFBO() {
     // Generate and bind the framebuffer
     glGenFramebuffers(1, &fboHandle);
-    glGenFramebuffers(1, &sceneHandle);
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     // Create the texture object
     GLuint renderTex;
@@ -160,10 +158,6 @@ void SceneBasic_Uniform::setupFBO() {
     // Bind the texture to the FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
         renderTex, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-        renderTex, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     // Create the depth buffer
     GLuint depthBuf;
     glGenRenderbuffers(1, &depthBuf);
@@ -172,25 +166,11 @@ void SceneBasic_Uniform::setupFBO() {
     // Bind the depth buffer to the FBO
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
         GL_RENDERBUFFER, depthBuf);
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER, depthBuf);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     // Set the targets for the fragment output variables
     GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, drawBuffers);
     GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (result == GL_FRAMEBUFFER_COMPLETE) {
-        cout << "Framebuffer is complete" << endl;
-    }
-    else {
-        cout << "Framebuffer error: " << result << endl;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, sceneHandle);
-    GLenum drawBuffers2[] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, drawBuffers2);
-    GLenum result2 = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (result2 == GL_FRAMEBUFFER_COMPLETE) {
         cout << "Framebuffer is complete" << endl;
     }
     else {
