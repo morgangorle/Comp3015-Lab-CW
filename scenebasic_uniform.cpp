@@ -42,6 +42,8 @@ void SceneBasic_Uniform::initScene()
     glEnable(GL_DEPTH_TEST);
     //load the texture and the model
     GLuint spotTexture = Texture::loadTexture("media/spot/spot_texture.png");
+    chestTex =
+        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/brick1.jpg");
     spot = ObjMesh::load("media/spot/spot_triangulated.obj");
     projection = mat4(1.0f);
     angle = glm::radians(140.0f);
@@ -49,6 +51,8 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ls", vec3(1.0f));
     prog.setUniform("Light.La", vec3(0.15f));
     setupFBO(); //we call the setup for our fbo
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, chestTex);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, spotTexture);
 }
@@ -136,6 +140,8 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, chestTex);
     chest->render();
     prog.setUniform("isSpot", 0);
     ScenePlane.render();

@@ -20,6 +20,7 @@ private:
     //GLuint vaoHandle;
     GLSLProgram prog;
     GLuint fboHandle;
+    GLuint chestTex;
 
     float angle;
     float tPrev;
