@@ -12,7 +12,7 @@
 
 #include "helper/plane.h"
 #include "helper/objmesh.h"
-//#include "helper/skybox.h"
+#include "helper/skybox.h"
 
 class SceneBasic_Uniform : public Scene
 {
@@ -21,6 +21,7 @@ private:
     GLSLProgram prog;
     GLuint fboHandle;
     GLuint chestTex;
+    GLuint skyboxTex;
 
     float angle;
     float tPrev;
@@ -28,7 +29,7 @@ private:
     Plane ScenePlane;
     std::unique_ptr<ObjMesh> chest;
     std::unique_ptr<ObjMesh> spot;
-    //SkyBox sky;
+    SkyBox sky;
 
     void compile();
 
@@ -43,6 +44,7 @@ public:
     void setupFBO();
     void renderToTexture();
     void renderScene();
+    void renderSkybox();
 };
 
 #endif // SCENEBASIC_UNIFORM_H

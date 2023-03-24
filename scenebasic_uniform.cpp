@@ -22,13 +22,12 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(5.0f, 5.0f, 1, 1)
+SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(5.0f, 5.0f, 1, 1), sky(100.0f)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
     angle = 0.0f;
     rotSpeed = (glm::pi<float>() / 8.0f);
-    //sky(100.0f)
     chest = ObjMesh::load("media/chest.obj", false, false);
     //SceneCube(1.0f)
     //SceneTeapot(14, mat4(1.0f))
@@ -41,16 +40,21 @@ void SceneBasic_Uniform::initScene()
     compile();
     glEnable(GL_DEPTH_TEST);
     //load the texture and the model
+    skyboxTex =
+        Texture::loadCubeMap("media/texture/fieldmap/field");
     GLuint spotTexture = Texture::loadTexture("media/spot/spot_texture.png");
     chestTex =
-        Texture::loadTexture("../Comp3015-Lab-Work/media/texture/brick1.jpg");
+        Texture::loadTexture("media/texture/brick1.jpg");
     spot = ObjMesh::load("media/spot/spot_triangulated.obj");
     projection = mat4(1.0f);
     angle = glm::radians(140.0f);
+    prog.setUniform("Light.La", vec3(0.15f));
     prog.setUniform("Light.Ld", vec3(1.0f));
     prog.setUniform("Light.Ls", vec3(1.0f));
-    prog.setUniform("Light.La", vec3(0.15f));
     setupFBO(); //we call the setup for our fbo
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, chestTex);
     glActiveTexture(GL_TEXTURE1);
@@ -83,7 +87,9 @@ void SceneBasic_Uniform::update(float t)
 
 void SceneBasic_Uniform::render()
 {
+    renderSkybox();
     //bind the buffer
+    glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     //Render everything that doesn't want the Spot item on it;
     //glFlush();
@@ -105,7 +111,7 @@ void SceneBasic_Uniform::resize(int w, int h)
     width = w;
     height = h;
     projection = glm::perspective(glm::radians(70.0f), (float)w / h,
-        0.3f, 100.0f);;
+        0.3f, 150.0f);;
 }
 
 void SceneBasic_Uniform::setMatrices()
@@ -122,7 +128,7 @@ void SceneBasic_Uniform::setMatrices()
 }
 
 void SceneBasic_Uniform::renderScene() {
-    prog.setUniform("isSpot", 1);
+    prog.setUniform("passNum", 1);
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     renderToTexture();
@@ -132,9 +138,10 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("RenderTex", 0);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    vec3 cameraPos = vec3(2.0f * cos(angle), 1.5f, 2.0f * sin(angle));
+    vec3 cameraPos = vec3(7.0f * cos(angle), 2.0f, 7.0f * sin(angle));
+    //vec3 cameraPos = vec3(2.0f * cos(angle), 1.5f, 2.0f * sin(angle));
     view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.3f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.3f, 150.0f);
     prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     prog.setUniform("Material.Ks", 0.0f, 0.0f, 0.0f);
     prog.setUniform("Material.Shininess", 1.0f);
@@ -143,9 +150,29 @@ void SceneBasic_Uniform::renderScene() {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, chestTex);
     chest->render();
-    prog.setUniform("isSpot", 0);
+    prog.setUniform("passNum", 0);
     ScenePlane.render();
 
+}
+
+void SceneBasic_Uniform::renderSkybox() {
+    glDepthMask(false);
+
+    //glEnable(GL_DEPTH_CLAMP);
+    prog.setUniform("passNum", 2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    vec3 cameraPos = vec3(7.0f * cos(angle), 2.0f, 7.0f * sin(angle));
+    view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f,
+        0.0f));
+    // Draw sky
+    prog.use();
+    model = mat4(1.0f);
+    setMatrices();
+    sky.render();
+    glDepthMask(true);
 }
 
 

@@ -4,11 +4,13 @@
 in vec3 Normal;
 in vec4 Position;
 in vec2 TexCoord;
+in vec3 Vec;
 
 layout (location = 0) out vec4 FragColour;
 
 uniform sampler2D RenderTex;
-uniform int isSpot;
+layout(binding=3) uniform samplerCube skyBoxTex;
+uniform int passNum;
 
 
 
@@ -74,15 +76,27 @@ vec4 noSpot()
     return vec4(blinnphong(Normal,Position), 1.0);
 }
 
+vec4 skyBox()
+{
+    vec3 texColour = texture(skyBoxTex, normalize(Vec)).rgb;
+    texColour = pow(texColour, vec3(1.0/2.2));
+    return vec4(texColour,1);
+
+}
+
 
 void main() {
 
-    if(isSpot == 0)
+    if(passNum == 0)
     {
         FragColour = noSpot();
     }
-    else
+    else if (passNum == 1)
     {
         FragColour = spot();
+    }
+    else if (passNum == 2)
+    {
+        FragColour = skyBox();
     }
 }

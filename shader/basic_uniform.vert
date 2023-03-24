@@ -8,6 +8,8 @@ out vec3 Normal; //normal
 out vec4 Position; //position
 out vec2 TexCoord; //Texture coordinates
 
+out vec3 Vec; // Pos for Skybox
+
 
 
 
@@ -24,6 +26,8 @@ void getCamSpaceValues (out vec3 norm, out vec4 position){
 
 void main()
 {
+    Vec = VertexPosition;
+
     TexCoord = VertexTexCoord;
     getCamSpaceValues(Normal,Position);
 
