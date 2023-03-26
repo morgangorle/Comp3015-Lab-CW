@@ -2,9 +2,9 @@
 
 ## Links
 
-Github Page:
+Github Page: https://github.com/morgangorle/Comp3015-Lab-CW
 
-Demonstration Video:
+Demonstration Video: https://www.youtube.com/watch?v=UpcxUn0n0Uo
 
 ## Development Environment
 
