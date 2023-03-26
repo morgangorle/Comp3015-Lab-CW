@@ -22,7 +22,7 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(7.5f, 7.5f, 1, 1), sky(100.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(7.5f, 7.5f, 1, 1), sky(150.0f)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
@@ -92,16 +92,13 @@ void SceneBasic_Uniform::update(float t)
 
 void SceneBasic_Uniform::render()
 {
-    //renderSkybox();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderSkybox();
     //bind the buffer
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
-    //Render everything that doesn't want the Spot item on it;
-    //glFlush();
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //renderNoSpot();
     //render to texture
-    //renderToTexture();
+    renderToTexture();
     //flush the buffer
     glFlush();
     //unbind the write buffer and bind the default buffer
@@ -134,16 +131,9 @@ void SceneBasic_Uniform::setMatrices()
 
 void SceneBasic_Uniform::renderScene() {
     prog.setUniform("passNum", 1);
-    glFlush();
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
-    renderToTexture();
-    glFlush();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 0);
     glViewport(0, 0, width, height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     vec3 cameraPos = vec3(7.0f * cos(angle), 2.0f, 7.0f * sin(angle));
     //vec3 cameraPos = vec3(2.0f * cos(angle), 1.5f, 2.0f * sin(angle));
     view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
@@ -181,7 +171,7 @@ void SceneBasic_Uniform::renderScene() {
 
 void SceneBasic_Uniform::renderSkybox() {
     glDepthMask(false);
-
+    glDepthFunc(GL_LEQUAL);
     //glEnable(GL_DEPTH_CLAMP);
     prog.setUniform("passNum", 2);
     glActiveTexture(GL_TEXTURE3);
@@ -197,6 +187,7 @@ void SceneBasic_Uniform::renderSkybox() {
     setMatrices();
     sky.render();
     glDepthMask(true);
+    glDepthFunc(GL_LESS);
 }
 
 
@@ -238,6 +229,7 @@ void SceneBasic_Uniform::setupFBO() {
 }
 
 void SceneBasic_Uniform::renderToTexture() {
+    prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 1);
     glViewport(0, 0, 512, 512);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

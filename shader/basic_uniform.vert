@@ -10,6 +10,8 @@ out vec2 TexCoord; //Texture coordinates
 
 out vec3 Vec; // Pos for Skybox
 
+uniform int passNum;
+
 
 
 
@@ -31,7 +33,20 @@ void main()
     TexCoord = VertexTexCoord;
     getCamSpaceValues(Normal,Position);
 
+    if(passNum == 2)
+    {
+    // Handle Skybox specific stuff
+        vec4 StandardOutput = MVP * vec4(VertexPosition,1.0);
+        StandardOutput.z = 1.0f;
+        gl_Position = StandardOutput.xyzw;
+
+    }
+    else
+    {
+    //Do standard stuff
     gl_Position = MVP * vec4(VertexPosition,1.0);
+
+    }
 
 
 }
