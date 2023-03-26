@@ -22,7 +22,7 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(7.5f, 7.5f, 1, 1), sky(150.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(10.0f, 10.0f, 1, 1), sky(150.0f)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
@@ -53,11 +53,12 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
     //Set up fog uniforms.
-    prog.setUniform("Fog.MaxDist", 30.0f);
+    prog.setUniform("Fog.MaxDist", 100.0f);
     prog.setUniform("Fog.MinDist", 10.0f);
-    prog.setUniform("Fog.Colour", vec3(0.5f, 0.5f, 0.5f));
+    prog.setUniform("Fog.Colour", vec3(0.5f, 20.0f, 0.5f));
     setupFBO(); //we call the setup for our fbo
 
+    //Bind Textures.
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTex);
     glActiveTexture(GL_TEXTURE2);
@@ -68,6 +69,7 @@ void SceneBasic_Uniform::initScene()
 
 void SceneBasic_Uniform::compile()
 {
+    //Compile the Vertex and Fragment Shaders
 	try {
 		prog.compileShader("shader/basic_uniform.vert");
 		prog.compileShader("shader/basic_uniform.frag");
