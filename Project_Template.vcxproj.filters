@@ -48,16 +48,7 @@
     <ClCompile Include="helper\plane.cpp">
       <Filter>helper</Filter>
     </ClCompile>
-    <ClCompile Include="helper\teapot.cpp">
-      <Filter>helper</Filter>
-    </ClCompile>
-    <ClCompile Include="helper\torus.cpp">
-      <Filter>helper</Filter>
-    </ClCompile>
     <ClCompile Include="helper\trianglemesh.cpp">
-      <Filter>helper</Filter>
-    </ClCompile>
-    <ClCompile Include="helper\cube.cpp">
       <Filter>helper</Filter>
     </ClCompile>
     <ClCompile Include="helper\skybox.cpp">
@@ -112,22 +103,10 @@
     <ClInclude Include="helper\scenerunner.h">
       <Filter>helper</Filter>
     </ClInclude>
-    <ClInclude Include="helper\teapot.h">
-      <Filter>helper</Filter>
-    </ClInclude>
-    <ClInclude Include="helper\teapotdata.h">
-      <Filter>helper</Filter>
-    </ClInclude>
-    <ClInclude Include="helper\torus.h">
-      <Filter>helper</Filter>
-    </ClInclude>
     <ClInclude Include="helper\trianglemesh.h">
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="helper\utils.h">
-      <Filter>helper</Filter>
-    </ClInclude>
-    <ClInclude Include="helper\cube.h">
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="helper\skybox.h">
