@@ -22,7 +22,7 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(5.0f, 5.0f, 1, 1), sky(100.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() :ScenePlane(7.5f, 7.5f, 1, 1), sky(100.0f)
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
     tPrev = 0.0f;
@@ -48,9 +48,14 @@ void SceneBasic_Uniform::initScene()
     spot = ObjMesh::load("media/spot/spot_triangulated.obj");
     projection = mat4(1.0f);
     angle = glm::radians(140.0f);
-    prog.setUniform("Light.La", vec3(0.15f));
-    prog.setUniform("Light.Ld", vec3(1.0f));
-    prog.setUniform("Light.Ls", vec3(1.0f));
+    //Set up lighting uniforms
+    prog.setUniform("Light.La", vec3(0.5f));
+    prog.setUniform("Light.Ld", vec3(0.9f));
+    prog.setUniform("Light.Ls", vec3(0.9f));
+    //Set up fog uniforms.
+    prog.setUniform("Fog.MaxDist", 30.0f);
+    prog.setUniform("Fog.MinDist", 10.0f);
+    prog.setUniform("Fog.Colour", vec3(0.5f, 0.5f, 0.5f));
     setupFBO(); //we call the setup for our fbo
 
     glActiveTexture(GL_TEXTURE3);
@@ -87,7 +92,7 @@ void SceneBasic_Uniform::update(float t)
 
 void SceneBasic_Uniform::render()
 {
-    renderSkybox();
+    //renderSkybox();
     //bind the buffer
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
@@ -135,6 +140,7 @@ void SceneBasic_Uniform::renderScene() {
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 0);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -147,12 +153,30 @@ void SceneBasic_Uniform::renderScene() {
     prog.setUniform("Material.Shininess", 1.0f);
     model = mat4(1.0f);
     setMatrices();
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, chestTex);
     chest->render();
-    prog.setUniform("passNum", 0);
-    ScenePlane.render();
 
+    //float dist = 0.0f;
+    //for (int i = 0; i < 5; i++) {
+        //Handle positioning of multiple models
+        //model = mat4(1.0f);
+        //model = glm::translate(model, vec3(dist * 0.6f - 1.0f, 7.5f, -dist));
+        //model = glm::rotate(model, glm::radians(45.0f), vec3(1.0f, 0.0f, 0.0f));
+        //model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
+        //setMatrices();
+        //chest->render();
+        //dist += 7.0f;
+
+    //}
+
+    // Handle rendering the plane
+    prog.setUniform("passNum", 3);
+    //Set Material Unifroms for Plane
+    prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
+    prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
+    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    prog.setUniform("Material.Shininess", 1.0f);
+    ScenePlane.render();
+    //prog.setUniform("passNum", 3);
 }
 
 void SceneBasic_Uniform::renderSkybox() {
