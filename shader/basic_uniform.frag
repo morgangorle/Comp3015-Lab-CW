@@ -3,14 +3,28 @@
 
 in vec3 Normal;
 in vec4 Position;
+in vec2 TexCoord;
 
-layout (binding = 0)uniform sampler2D Texture0;
 
-uniform float EdgeThreshold;
-uniform float Weight[5];
 uniform int Pass;
+uniform float AveLum;
+layout(binding=0) uniform sampler2D HdrTex;
+// XYZ/RGB conversion matrices from: -- Useful resource
+// http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+uniform mat3 rgb2xyz = mat3(
+0.4124564, 0.2126729, 0.0193339,
+0.3575761, 0.7151522, 0.1191920,
+0.1804375, 0.0721750, 0.9503041 );
+uniform mat3 xyz2rgb = mat3(
+3.2404542, -0.9692660, 0.0556434,
+-1.5371385, 1.8760108, -0.2040259,
+-0.4985314, 0.0415560, 1.0572252 );
+uniform float Exposure = 0.35;
+uniform float White = 0.928;
+uniform bool DoToneMap = true;
 
-layout( location = 0 ) out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec3 HdrColor;
 
 const vec3 lum = vec3(0.2126, 0.7152, 0.0722);
 
@@ -21,7 +35,7 @@ uniform struct lightinfo
     vec4 Position;
     vec3 La;
     vec3 L; //Ld = Ls
-} Light;
+} Lights[3];
 
 // Material info
 uniform struct MaterialInfo{
@@ -33,13 +47,13 @@ uniform struct MaterialInfo{
 } Material;
 
 
-vec3 blinnphong(vec3 n, vec4 pos){
+vec3 blinnphong(vec3 n, vec4 pos, int arIndex){
     //Handle Ambient Lighting
 
-    vec3 ambient = Light.La;
-    vec3 s = normalize(vec3(Light.Position.xyz-pos.xyz));
+    vec3 ambient = Lights[arIndex].La;
+    vec3 s = normalize(vec3(Lights[arIndex].Position.xyz-pos.xyz));
     float sDotN = max(dot(s,n),0.0);
-    vec3 diffuse= Material.Kd * sDotN * Light.L;
+    vec3 diffuse= Material.Kd * sDotN * Lights[arIndex].L;
     vec3 spec = vec3(0.0);
    if(sDotN>0.0){
      vec3 v = normalize(-pos.xyz);
@@ -54,39 +68,37 @@ float luminance( vec3 color )
  return dot(lum,color);
 }
 
-vec4 pass1()
+void pass1()
 {
- return vec4(blinnphong(normalize(Normal), Position ),1.0);
+    vec3 n = normalize(Normal);
+    // Compute shading and store result in high-res framebuffer
+    HdrColor = vec3(0.0);
+    for( int i = 0; i < 3; i++)
+    HdrColor += blinnphong(n, Position, i);
 }
-vec4 pass2()
+void pass2()
 {
-ivec2 pix = ivec2( gl_FragCoord.xy );
-vec4 sum = texelFetch(Texture0, pix, 0) * Weight[0];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,1) ) * Weight[1];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-1) ) * Weight[1];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,2) ) * Weight[2];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-2) ) * Weight[2];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,3) ) * Weight[3];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-3) ) * Weight[3];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,4) ) * Weight[4];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-4) ) * Weight[4];
-return sum;
+// Retrieve high-res color from texture
+vec4 color = texture( HdrTex, TexCoord );
+// Convert to XYZ
+vec3 xyzCol = rgb2xyz * vec3(color);
+// Convert to xyY
+float xyzSum = xyzCol.x + xyzCol.y + xyzCol.z;
+vec3 xyYCol = vec3( xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
+// Apply the tone mapping operation to the luminance (xyYCol.z or xyzCol.y)
+float L = (Exposure * xyYCol.z) / AveLum;
+L = (L * ( 1 + L / (White * White) )) / ( 1 + L );
+// Using the new luminance, convert back to XYZ
+xyzCol.x = (L * xyYCol.x) / (xyYCol.y);
+xyzCol.y = L;
+xyzCol.z = (L * (1 - xyYCol.x - xyYCol.y))/xyYCol.y;
+// Convert back to RGB and send to output buffer
+if( DoToneMap )
+FragColor = vec4( xyz2rgb * xyzCol, 1.0);
+else
+FragColor = color;
 }
 
-vec4 pass3()
-{
-ivec2 pix = ivec2( gl_FragCoord.xy );
-vec4 sum = texelFetch(Texture0, pix, 0) * Weight[0];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(1,0) ) * Weight[1];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(-1,0) ) * Weight[1];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(2,0) ) * Weight[2];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(-2,0) ) * Weight[2];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(3,0) ) * Weight[3];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(-3,0) ) * Weight[3];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(4,0) ) * Weight[4];
-sum += texelFetchOffset( Texture0, pix, 0, ivec2(-4,0) ) * Weight[4];
-return sum;
-}
 
 
 
@@ -94,14 +106,10 @@ void main()
 {
     if( Pass == 1 )
     {
-    FragColor = pass1();
+    pass1();
     }
     else if( Pass == 2 )
     {
-    FragColor = pass2();
-    }
-    else if( Pass == 3 )
-    {
-    FragColor = pass3();
+    pass2();
     }
 }
