@@ -8,9 +8,9 @@ in vec2 TexCoord;
 
 uniform int Pass;
 
-layout (binding=0) uniform sampler2D HdrTex;
-layout (binding=1) uniform sampler2D BlurTex1;
-layout (binding=2) uniform sampler2D BlurTex2;
+layout(binding=0) uniform sampler2D PositionTex;
+layout(binding=1) uniform sampler2D NormalTex;
+layout(binding=2) uniform sampler2D ColorTex;
 
 
 // XYZ/RGB conversion matrices from: -- Useful resource
@@ -34,6 +34,9 @@ uniform float PixOffset[10] = float[](0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0);
 uniform float Weight[10];
 
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 PositionData;
+layout (location = 2) out vec3 NormalData;
+layout (location = 3) out vec3 ColorData;
 
 const vec3 lum = vec3(0.2126, 0.7152, 0.0722);
 
@@ -44,7 +47,7 @@ uniform struct lightinfo
     vec4 Position;
     vec3 La;
     vec3 L; //Ld = Ls
-} Lights[3];
+} Light;
 
 // Material info
 uniform struct MaterialInfo{
@@ -60,122 +63,50 @@ float luminance( vec3 color )
 return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
 }
 
-vec3 blinnphong(vec3 n, vec4 pos, int arIndex){
+vec3 blinnphong(vec3 n, vec4 pos, vec3 diffColour){
     //Handle Ambient Lighting
 
-    vec3 ambient = Lights[arIndex].La;
-    vec3 s = normalize(vec3(Lights[arIndex].Position.xyz-pos.xyz));
+    vec3 ambient = Light.La;
+    vec3 s = normalize(vec3(Light.Position.xyz-pos.xyz));
     float sDotN = max(dot(s,n),0.0);
-    vec3 diffuse= Material.Kd * sDotN * Lights[arIndex].L;
+    vec3 diffuse= diffColour * sDotN;
     vec3 spec = vec3(0.0);
    if(sDotN>0.0){
      vec3 v = normalize(-pos.xyz);
      vec3 h = normalize(v+s);
-     spec = Material.Ks*pow(max(dot(h,n),0.0),Material.Shininess);
+     spec = Light.L * Material.Ks*pow(max(dot(h,n),0.0),Material.Shininess);
    }
     return ambient+diffuse+spec;
 }
 
 
-vec4 pass1()
+void pass1()
 {
-vec3 n = normalize(Normal);
-vec3 color = vec3(0.0);
-for( int i = 0; i < 3; i++)
-color += blinnphong(n,Position, i);
-return vec4(color,1);
+// Store position, normal, and diffuse color in textures
+PositionData = Position;
+NormalData = normalize(Normal);
+ColorData = Material.Kd;
 }
-vec4 pass2()
+void pass2()
 {
-vec4 val = texture(HdrTex, TexCoord);
-if( luminance(val.rgb) > LumThresh )
-return val;
-else
-return vec4(0.0);
-}
-
-// First blur pass (read from BlurTex1, write to BlurTex2)
-vec4 pass3() {
-float dy = 1.0 / (textureSize(BlurTex1,0)).y;
-vec4 sum = texture(BlurTex1, TexCoord) * Weight[0];
-for( int i = 1; i < 10; i++ )
-{
-sum += texture( BlurTex1, TexCoord + vec2(0.0,PixOffset[i]) * dy ) *
-Weight[i];
-sum += texture( BlurTex1, TexCoord - vec2(0.0,PixOffset[i]) * dy ) *
-Weight[i];
-}
-return sum;
-}
-// Second blur (read from BlurTex2, write to BlurTex1)
-vec4 pass4() {
-float dx = 1.0 / (textureSize(BlurTex2,0)).x;
-vec4 sum = texture(BlurTex2, TexCoord) * Weight[0];
-for( int i = 1; i < 10; i++ )
-{
-sum += texture( BlurTex2, TexCoord + vec2(PixOffset[i],0.0) * dx ) *
-Weight[i];
-sum += texture( BlurTex2, TexCoord - vec2(PixOffset[i],0.0) * dx ) *
-Weight[i];
-}
-return sum;
-}
-
-// (Read from BlurTex1 and HdrTex, write to default buffer).
-vec4 pass5() {
-/////////////// Tone mapping ///////////////
-// Retrieve high-res color from texture
-vec4 color = texture( HdrTex, TexCoord );
-// Convert to XYZ
-vec3 xyzCol = rgb2xyz * vec3(color);
-// Convert to xyY
-float xyzSum = xyzCol.x + xyzCol.y + xyzCol.z;
-vec3 xyYCol = vec3( xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
-// Apply the tone mapping operation to the luminance (xyYCol.z or xyzCol.y)
-float L = (Exposure * xyYCol.z) / AveLum;
-L = (L * ( 1 + L / (White * White) )) / ( 1 + L );
-// Using the new luminance, convert back to XYZ
-xyzCol.x = (L * xyYCol.x) / (xyYCol.y);
-xyzCol.y = L;
-xyzCol.z = (L * (1 - xyYCol.x - xyYCol.y))/xyYCol.y;
-// Convert back to RGB
-vec4 toneMapColor = vec4( xyz2rgb * xyzCol, 1.0);
-///////////// Combine with blurred texture /////////////
-// We want linear filtering on this texture access so that
-// we get additional blurring.
-vec4 blurTex = texture(BlurTex1, TexCoord);
-return toneMapColor + blurTex;
+// Retrieve position and normal information from textures
+vec4 pos = vec4( texture( PositionTex, TexCoord ) );
+vec3 norm = vec3( texture( NormalTex, TexCoord ) );
+vec3 diffColor = vec3( texture(ColorTex, TexCoord) );
+//FragColor = vec4( diffuseModel(pos,norm,diffColor), 1.0 );
+FragColor = vec4( blinnphong(norm,pos,diffColor), 1.0 );
 }
 
 
 
 void main()
 {
-    float Gamma = 1.45f;
-    vec4 preGamma;
     if( Pass == 1 )
     {
-    preGamma = pass1();
+    pass1();
     }
     else if( Pass == 2 )
     {
-    preGamma = pass2();
+    pass2();
     }
-
-    else if( Pass == 3 )
-    {
-    preGamma = pass3();
-    }
-
-    else if( Pass == 4 )
-    {
-    preGamma = pass4();
-    }
-
-    else if( Pass == 5 )
-    {
-    preGamma = pass5();
-    }
-
-    FragColor = pow( preGamma, vec4(1.0/Gamma) );
 }

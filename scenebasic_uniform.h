@@ -12,7 +12,7 @@
 
 #include "helper/plane.h"
 //#include "helper/cube.h"
-//#include "helper/torus.h"
+#include "helper/torus.h"
 #include "helper/teapot.h"
 #include "helper/sphere.h"
 //#include "helper/objmesh.h"
@@ -22,19 +22,16 @@ class SceneBasic_Uniform : public Scene
 {
 private:
     GLSLProgram prog;
-    GLuint hdrFbo, blurFbo;
-    GLuint fsQuad;
+    GLuint deferredFBO;
+    GLuint quad;
 
-    GLuint hdrTex, tex1, tex2;
-    GLuint linearSampler, nearestSampler;
-
-    int bloomBufWidth, bloomBufHeight;
 
     float angle;
     float tPrev;
     float rotSpeed; 
     Teapot SceneTeapot;
-    Sphere SceneSphere;
+    Torus SceneTorus;
+    //Sphere SceneSphere;
     Plane ScenePlane;
 
     void compile();
@@ -51,11 +48,7 @@ public:
     void setupFBO();
     void pass1();
     void pass2();
-    void pass3();
-    void pass4();
-    void pass5();
-    void computeLogAveLuminance();
-    void drawScene();
+    void createGBufTex(GLenum, GLenum, GLuint&);
 
     float gauss(float, float);
 };
