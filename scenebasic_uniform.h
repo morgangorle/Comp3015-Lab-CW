@@ -22,9 +22,13 @@ class SceneBasic_Uniform : public Scene
 {
 private:
     GLSLProgram prog;
-    GLuint hdrFBO;
-    GLuint quad;
-    GLuint hdrTex, avgTex;
+    GLuint hdrFbo, blurFbo;
+    GLuint fsQuad;
+
+    GLuint hdrTex, tex1, tex2;
+    GLuint linearSampler, nearestSampler;
+
+    int bloomBufWidth, bloomBufHeight;
 
     float angle;
     float tPrev;
@@ -47,6 +51,9 @@ public:
     void setupFBO();
     void pass1();
     void pass2();
+    void pass3();
+    void pass4();
+    void pass5();
     void computeLogAveLuminance();
     void drawScene();
 
