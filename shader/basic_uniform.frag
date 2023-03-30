@@ -151,27 +151,31 @@ return toneMapColor + blurTex;
 
 void main()
 {
+    float Gamma = 1.45f;
+    vec4 preGamma;
     if( Pass == 1 )
     {
-    FragColor = pass1();
+    preGamma = pass1();
     }
     else if( Pass == 2 )
     {
-    FragColor = pass2();
+    preGamma = pass2();
     }
 
     else if( Pass == 3 )
     {
-    FragColor = pass3();
+    preGamma = pass3();
     }
 
     else if( Pass == 4 )
     {
-    FragColor = pass4();
+    preGamma = pass4();
     }
 
     else if( Pass == 5 )
     {
-    FragColor = pass5();
+    preGamma = pass5();
     }
+
+    FragColor = pow( preGamma, vec4(1.0/Gamma) );
 }
