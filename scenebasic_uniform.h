@@ -22,7 +22,9 @@ class SceneBasic_Uniform : public Scene
 private:
     //GLuint vaoHandle;
     GLSLProgram prog;
-    GLuint fsQuad, fboHandle, renderTex;
+    GLuint fsQuad;
+    GLuint renderFBO, intermediateFBO;
+    GLuint renderTex, intermediateTex;
 
     float angle;
     float tPrev;
@@ -49,6 +51,8 @@ public:
     //void renderScene();
     void pass1();
     void pass2();
+    void pass3();
+    float gauss(float, float);
 };
 
 #endif // SCENEBASIC_UNIFORM_H
