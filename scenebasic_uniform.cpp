@@ -22,12 +22,12 @@ using glm::vec4;
 using glm::mat3;
 using glm::mat4;
 
-SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(14, mat4(1.0f)) , SceneTorus(0.7f * 1.5f, 0.3f * 1.5f, 50, 50), ScenePlane(20.0f, 50.0f, 1, 1)
+SceneBasic_Uniform::SceneBasic_Uniform()
 {
     //ScenePlane(50.0f, 50.0f, 1, 1)
-    tPrev = 0.0f;
-    angle = 0.0f;
-    rotSpeed = (glm::pi<float>() / 8.0f);
+    //tPrev = 0.0f;
+    //angle = 0.0f;
+    //rotSpeed = (glm::pi<float>() / 8.0f);
     //sky(100.0f)
     //ogre = ObjMesh::load("media/bs_ears.obj", false, true);
     //SceneCube(1.0f)
@@ -38,38 +38,55 @@ SceneBasic_Uniform::SceneBasic_Uniform() : SceneTeapot(14, mat4(1.0f)) , SceneTo
 void SceneBasic_Uniform::initScene()
 {
     compile();
+
+    glClearColor(0.5f, 0.5f,0.5f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    float c = 1.5f;
-    angle = glm::pi<float>() / 2.0f;
-    // Array for quad
-    GLfloat verts[] = {
-    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-    -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
-    };
-    GLfloat tc[] = {
-    0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
-    };
-    // Set up the buffers
-    unsigned int handle[2];
-    glGenBuffers(2, handle);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(float), verts,
-        GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), tc, GL_STATIC_DRAW);
-    // Set up the vertex array object
-    glGenVertexArrays(1, &quad);
-    glBindVertexArray(quad);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
-    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0); // Vertex position
-    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
-    glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(2); // Texture coordinates
+
+    //setup 50 Sprites
+    numSprites = 50;
+    locations = new float[numSprites * 3];
+    srand((unsigned int)time(0));
+
+    //For each sprite set up a location in the array
+
+    for( int i = 0; i < numSprites;i ++)
+    {
+        vec3 p(((float)rand() / RAND_MAX * 2.0f) - 1.0f,
+            ((float)rand() / RAND_MAX * 2.0f) - 1.0f,
+            ((float)rand() / RAND_MAX * 2.0f - 1.0f));
+        locations[i * 3] = p.x;
+        locations[i * 3 + 1] = p.y;
+        locations[i * 3 + 2] = p.z;
+
+    }
+
+    //Set up Buffers
+    GLuint handle;
+    glGenBuffers(1, &handle);
+
+    glBindBuffer(GL_ARRAY_BUFFER,handle);
+    glBufferData(GL_ARRAY_BUFFER,numSprites * 3 + sizeof(float), locations, GL_STATIC_DRAW);
+
+    delete[] locations;
+
+
+    // Set up Vertex Array Object
+    glGenVertexArrays(1, &sprites);
+    glBindVertexArray(sprites);
+
+    glBindBuffer(GL_ARRAY_BUFFER,handle);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0, ((GLubyte*) NULL + (0)));
+    glEnableVertexAttribArray(0);
+
     glBindVertexArray(0);
-    setupFBO();
-    prog.setUniform("Light.L", vec3(1.0f));
+
+    //Load Texture File
+    const char* texName = "../Comp3015-Lab-CW/media/texture/flower.png";
+    Texture::loadTexture(texName);
+
+    prog.setUniform("SpriteTex", 0);
+    prog.setUniform("Size2", 0.15f);
+
 }
 
 void SceneBasic_Uniform::compile()
@@ -77,6 +94,7 @@ void SceneBasic_Uniform::compile()
 	try {
 		prog.compileShader("shader/basic_uniform.vert");
 		prog.compileShader("shader/basic_uniform.frag");
+        prog.compileShader("shader/basic_uniform.gs");
 		prog.link();
 		prog.use();
 	} catch (GLSLProgramException &e) {
@@ -87,68 +105,29 @@ void SceneBasic_Uniform::compile()
 
 void SceneBasic_Uniform::update(float t)
 {
-    float deltaT = t - tPrev;
-    if (tPrev == 0.0f)
-        deltaT = 0.0f;
-    tPrev = t;
-    angle += rotSpeed * deltaT;
-    if (angle > glm::two_pi<float>())
-        angle -= glm::two_pi<float>();
+
 }
 
-void SceneBasic_Uniform::pass1()
-{
-    prog.setUniform("Pass", 1);
-    glBindFramebuffer(GL_FRAMEBUFFER, deferredFBO);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    view = glm::lookAt(vec3(7.0f * cos(angle), 4.0f, 7.0f * sin(angle)),
-        vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(glm::radians(60.0f), (float)width / height,
-        0.3f, 100.0f);
-    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    prog.setUniform("Material.Kd", 0.9f, 0.9f, 0.9f);
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, 0.0f, 0.0f));
-    //model = glm::rotate(model, glm::radians(-90.0f), vec3(1.0f, 0.0f, 0.0f));
-    setMatrices();
-    SceneTeapot.render();
-    prog.setUniform("Material.Kd", 0.4f, 0.4f, 0.4f);
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, -0.75f, 0.0f));
-    setMatrices();
-    ScenePlane.render();
-    prog.setUniform("Light.Position", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    prog.setUniform("Material.Kd", 0.2f, 0.5f, 0.9f);
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(1.0f, 1.0f, 3.0f));
-    //model = glm::rotate(model, glm::radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
-    setMatrices();
-    SceneTorus.render();
-    glFinish();
-}
-
-void SceneBasic_Uniform::pass2()
-{
-    prog.setUniform("Pass", 2);
-    // Revert to default framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-    view = mat4(1.0);
-    model = mat4(1.0);
-    projection = mat4(1.0);
-    setMatrices();
-    // Render the quad
-    glBindVertexArray(quad);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
 
 
 void SceneBasic_Uniform::render()
 {
-    pass1();
-    pass2();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Set Up Camera
+    vec3 cameraPos(0.0f, 0.0f, 3.0f);
+    view = glm::lookAt(cameraPos,
+        vec3(0.0f, 0.0f, 0.0f),
+        vec3(0.0f, 1.0f, 0.0f));
+
+    model = mat4(1.0f);
+    setMatrices();
+
+    glBindVertexArray(sprites);
+    glDrawArrays(GL_POINTS,0,numSprites);
+
+    glFinish();
+
 }
 
 
@@ -168,58 +147,9 @@ void SceneBasic_Uniform::setMatrices()
 
     //prog.setUniform("ModelMatrix", model);
     prog.setUniform("ModelViewMatrix", mv);
-    prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]),vec3(mv[1]),vec3(mv[2])));
-    prog.setUniform("MVP", projection * mv);
+    //prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]),vec3(mv[1]),vec3(mv[2])));
+    //prog.setUniform("MVP", projection * mv);
     prog.setUniform("ProjectionMatrix", projection);
 
 
-}
-
-
-void SceneBasic_Uniform::setupFBO(){
-    GLuint depthBuf, posTex, normTex, colorTex;
-    // Create and bind the FBO
-    glGenFramebuffers(1, &deferredFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, deferredFBO);
-    // The depth buffer
-    glGenRenderbuffers(1, &depthBuf);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuf);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-    // Create the textures for position, normal and color
-    createGBufTex(GL_TEXTURE0, GL_RGB32F, posTex); // Position
-    createGBufTex(GL_TEXTURE1, GL_RGB32F, normTex); // Normal
-    createGBufTex(GL_TEXTURE2, GL_RGB8, colorTex); // Color
-    // Attach the textures to the framebuffer
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER, depthBuf);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-        posTex, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
-        normTex, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
-        colorTex, 0);
-    GLenum drawBuffers[] = { GL_NONE, GL_COLOR_ATTACHMENT0,
-    GL_COLOR_ATTACHMENT1,
-    GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers(4, drawBuffers);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-float SceneBasic_Uniform::gauss(float x, float sigma2)
-{
-    double coeff = 1.0 / (glm::two_pi<double>() * sigma2);
-    double expon = -(x * x) / (2.0 * sigma2);
-    return (float)(coeff * exp(expon));
-}
-
-void SceneBasic_Uniform::createGBufTex(GLenum texUnit, GLenum format, GLuint
-    & texid)
-{
-    glActiveTexture(texUnit);
-    glGenTextures(1, &texid);
-    glBindTexture(GL_TEXTURE_2D, texid);
-    glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 }

@@ -9,31 +9,20 @@
 #include <glad/glad.h>
 #include "helper/glslprogram.h"
 
-
-#include "helper/plane.h"
-//#include "helper/cube.h"
-#include "helper/torus.h"
-#include "helper/teapot.h"
-#include "helper/sphere.h"
-//#include "helper/objmesh.h"
-//#include "helper/skybox.h"
-
 class SceneBasic_Uniform : public Scene
 {
 private:
     GLSLProgram prog;
-    GLuint deferredFBO;
-    GLuint quad;
+    GLuint sprites;
+    int numSprites;
+    float* locations;
 
 
-    float angle;
-    float tPrev;
-    float rotSpeed; 
-    Teapot SceneTeapot;
-    Torus SceneTorus;
-    //Sphere SceneSphere;
-    Plane ScenePlane;
+    //float angle;
+    //float tPrev;
+    //float rotSpeed; 
 
+    void setMatrices();
     void compile();
 
 public:
@@ -43,14 +32,6 @@ public:
     void update( float t );
     void render();
     void resize(int, int);
-    void setMatrices();
-
-    void setupFBO();
-    void pass1();
-    void pass2();
-    void createGBufTex(GLenum, GLenum, GLuint&);
-
-    float gauss(float, float);
 };
 
 #endif // SCENEBASIC_UNIFORM_H
