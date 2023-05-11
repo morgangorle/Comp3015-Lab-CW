@@ -1,14 +1,17 @@
 #version 460
 
-layout (points) in;
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
 
-layout (triangle_strip,max_vertices = 4) out;
+out vec3 GNormal;
+out vec3 GPosition;
 
-uniform float Size2;
+noperspective out vec3 GEdgeDistance;
 
-uniform mat4 ProjectionMatrix;
+in vec3 VNormal[];
+in vec3 VPosition[];
 
-out vec2 TexCoord;
+uniform mat4 ViewportMatrix;
 
 void main()
 {
