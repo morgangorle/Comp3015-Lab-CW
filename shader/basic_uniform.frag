@@ -1,10 +1,10 @@
 #version 460
 
 
-in vec3 Normal;
-in vec4 Position;
-in vec2 TexCoord;
-in vec3 Vec;
+in vec3 FragNormal;
+in vec4 FragPosition;
+in vec2 FragTexCoord;
+in vec3 FragVec;
 
 layout (location = 0) out vec4 FragColour;
 
@@ -44,7 +44,7 @@ uniform struct FogInfo {
 // A version of BlinnPhong Shading with Texturing
 vec3 blinnphongTex(vec3 n, vec4 pos){
     //Handle Ambient Lighting
-    vec3 texColour = texture(RenderTex, TexCoord).rgb;
+    vec3 texColour = texture(RenderTex, FragTexCoord).rgb;
 
     vec3 ambient = Light.La*texColour;
     vec3 s = normalize(vec3(Light.Position.xyz-pos.xyz));
@@ -61,7 +61,7 @@ vec3 blinnphongTex(vec3 n, vec4 pos){
 
 vec3 blinnphongChest(vec3 n, vec4 pos){
     //Handle Ambient Lighting
-    vec3 texColour = texture(chestTex, TexCoord).rgb;
+    vec3 texColour = texture(chestTex, FragTexCoord).rgb;
 
     vec3 ambient = Light.La*texColour;
     vec3 s = normalize(vec3(Light.Position.xyz-pos.xyz));
@@ -96,29 +96,29 @@ vec3 blinnphong(vec3 n, vec4 pos){
 vec4 spot()
 {
 
-    //return vec4(blinnphongTex(Normal,Position), 1.0);
-    float dist = abs(Position.z);
+    //return vec4(blinnphongTex(FragNormal,FragPosition), 1.0);
+    float dist = abs(FragPosition.z);
     float fogFactor = (Fog.MaxDist-dist) / (Fog.MaxDist-Fog.MinDist);
     fogFactor = clamp(fogFactor,0.0,1.0);
-    vec3 shadeColour = blinnphongTex(Normal,Position);
+    vec3 shadeColour = blinnphongTex(FragNormal,FragPosition);
     vec3 colour = mix(Fog.Colour, shadeColour,fogFactor);
     return vec4(colour,1.0);
 }
 
 vec4 noSpot()
 {
-    //return vec4(blinnphong(Normal,Position), 1.0);
-    float dist = abs(Position.z);
+    //return vec4(blinnphong(FragNormal,FragPosition), 1.0);
+    float dist = abs(FragPosition.z);
     float fogFactor = (Fog.MaxDist-dist) / (Fog.MaxDist-Fog.MinDist);
     fogFactor = clamp(fogFactor,0.0,1.0);
-    vec3 shadeColour = blinnphong(Normal,Position);
+    vec3 shadeColour = blinnphong(FragNormal,FragPosition);
     vec3 colour = mix(Fog.Colour, shadeColour,fogFactor);
     return vec4(colour,1.0);
 }
 // A function called for my skybox.
 vec4 skyBox()
 {
-    vec3 texColour = texture(skyBoxTex, normalize(Vec)).rgb;
+    vec3 texColour = texture(skyBoxTex, normalize(FragVec)).rgb;
     texColour = pow(texColour, vec3(1.0/2.2));
     return vec4(texColour,1);
 
@@ -126,10 +126,10 @@ vec4 skyBox()
 // A function called to render the fog.
 vec4 FogRender()
 {
-    float dist = abs(Position.z);
+    float dist = abs(FragPosition.z);
     float fogFactor = (Fog.MaxDist-dist) / (Fog.MaxDist-Fog.MinDist);
     fogFactor = clamp(fogFactor,0.0,1.0);
-    vec3 shadeColour = blinnphong(Normal,Position);
+    vec3 shadeColour = blinnphong(FragNormal,FragPosition);
     vec3 colour = mix(Fog.Colour, shadeColour,fogFactor);
     return vec4(colour,1.0);
 
@@ -137,10 +137,10 @@ vec4 FogRender()
 
 vec4 ChestRender()
 {
-    float dist = abs(Position.z);
+    float dist = abs(FragPosition.z);
     float fogFactor = (Fog.MaxDist-dist) / (Fog.MaxDist-Fog.MinDist);
     fogFactor = clamp(fogFactor,0.0,1.0);
-    vec3 shadeColour = blinnphongChest(Normal,Position);
+    vec3 shadeColour = blinnphongChest(FragNormal,FragPosition);
     vec3 colour = mix(Fog.Colour, shadeColour,fogFactor);
     return vec4(colour,1.0);
 
