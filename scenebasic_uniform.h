@@ -45,6 +45,7 @@ public:
     void renderToTexture();
     void renderScene();
     void renderSkybox();
+    void edgeDetection();
 };
 
 #endif // SCENEBASIC_UNIFORM_H
