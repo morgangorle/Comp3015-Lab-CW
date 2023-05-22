@@ -22,6 +22,7 @@ private:
     GLuint fboHandle;
     GLuint chestTex;
     GLuint skyboxTex;
+    GLuint fsQuad, renderTex;
 
     float angle;
     float tPrev;

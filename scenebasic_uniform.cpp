@@ -65,6 +65,36 @@ void SceneBasic_Uniform::initScene()
     glBindTexture(GL_TEXTURE_2D, chestTex);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, spotTexture);
+
+    // Init variables for Edge Detection
+
+        // Array for full-screen quad
+    GLfloat verts[] = {
+    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
+    };
+    GLfloat tc[] = {
+    0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+    };
+    // Set up the buffers
+    unsigned int handle[2];
+    glGenBuffers(2, handle);
+    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(float), verts, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), tc, GL_STATIC_DRAW);
+    // Set up the vertex array object
+    glGenVertexArrays(1, &fsQuad);
+    glBindVertexArray(fsQuad);
+    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
+    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0); // Vertex position
+    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
+    glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(2); // Texture coordinates
+    glBindVertexArray(0);
+    prog.setUniform("EdgeThreshold", 0.05f);
 }
 
 void SceneBasic_Uniform::compile()
@@ -194,13 +224,10 @@ void SceneBasic_Uniform::renderSkybox() {
 }
 
 void SceneBasic_Uniform::edgeDetection() {
-    //GLuint renderTex;
-    //glGenTextures(1, &renderTex);
-    //glBindTexture(GL_TEXTURE_2D, renderTex);
     prog.setUniform("passNum", 4);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, renderTex);
+    glBindTexture(GL_TEXTURE_2D, renderTex);
     glDisable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT);
     model = mat4(1.0f);
@@ -208,32 +235,7 @@ void SceneBasic_Uniform::edgeDetection() {
     projection = mat4(1.0f);
     setMatrices();
     // Render the full-screen quad
-        // Array for full-screen quad
-    GLfloat verts[] = {
-    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-    -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
-    };
-    GLfloat tc[] = {
-    0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
-    };
-        // Set up the buffers
-    unsigned int handle[2];
-    glGenBuffers(2, handle);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(float), verts, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), tc, GL_STATIC_DRAW);
-    GLuint fsQuad;
-    glGenVertexArrays(1, &fsQuad);
     glBindVertexArray(fsQuad);
-    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
-    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0); // Vertex position
-    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
-    glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(2); // Texture coordinates
-    glBindVertexArray(0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 }
@@ -244,7 +246,7 @@ void SceneBasic_Uniform::setupFBO() {
     glGenFramebuffers(1, &fboHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     // Create the texture object
-    GLuint renderTex;
+    renderTex;
     glGenTextures(1, &renderTex);
     glActiveTexture(GL_TEXTURE0); // Use texture unit 0
     glBindTexture(GL_TEXTURE_2D, renderTex);
