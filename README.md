@@ -17,7 +17,7 @@ Demonstration Video:
 
 Currently this program renders a chest with a 3D texture rendered onto it alongside a skybox, a plane with a texture alongside some fog.
 
-The program also has an edge detection function which switches it to black and white.
+The program also has an edge detection function which switches it to black and white, to change it back to colour again, comment out the edge detection function in the render loop and also comment out the binding to the frame buffer in the renderScene function and the first GLCLear function in the Render scene, failing to do that will cause the Skybox not to function. Commenting out the binding to the frame buffer is important as only doing the commenting out the edge detection function will cause mass screen flickering.
 
 To accomplish this I ended up making various different versions of a Blinnphong shading to suit my needs in the moment and using a uniform variable to assist me in ensuring the right one is called.
 
