@@ -137,6 +137,8 @@ void SceneBasic_Uniform::render()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //render the scene using the newly written texture
     renderScene();
+    glFlush();
+    edgeDetection();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -162,9 +164,13 @@ void SceneBasic_Uniform::setMatrices()
 }
 
 void SceneBasic_Uniform::renderScene() {
+    glViewport(0, 0, width, height);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 0);
-    glViewport(0, 0, width, height);
+    //glViewport(0, 0, width, height);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     vec3 cameraPos = vec3(7.0f * cos(angle), 2.0f, 7.0f * sin(angle));
     //vec3 cameraPos = vec3(2.0f * cos(angle), 1.5f, 2.0f * sin(angle));
@@ -191,14 +197,15 @@ void SceneBasic_Uniform::renderScene() {
     //}
 
     // Handle rendering the plane
-    prog.setUniform("passNum", 3);
+    prog.setUniform("passNum", 1);
     //Set Material Unifroms for Plane
     prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
     prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
     prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
     prog.setUniform("Material.Shininess", 1.0f);
+    model = mat4(1.0f);
+    setMatrices();
     ScenePlane.render();
-    edgeDetection();
     //prog.setUniform("passNum", 3);
 }
 
