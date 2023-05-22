@@ -8,7 +8,9 @@ in vec3 Vec;
 
 layout (location = 0) out vec4 FragColour;
 uniform float EdgeThreshold;
+uniform float Weight[5];
 uniform sampler2D RenderTex;
+layout (binding = 0)uniform sampler2D Texture0;
 layout(binding=2) uniform sampler2D chestTex;
 layout(binding=3) uniform samplerCube skyBoxTex;
 uniform int passNum;
@@ -176,6 +178,35 @@ vec4 EdgeDetection(){
     }
 }
 
+vec4 GaussPass1()
+{
+ivec2 pix = ivec2( gl_FragCoord.xy );
+vec4 sum = texelFetch(Texture0, pix, 0) * Weight[0];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,1) ) * Weight[1];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-1) ) * Weight[1];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,2) ) * Weight[2];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-2) ) * Weight[2];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,3) ) * Weight[3];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-3) ) * Weight[3];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,4) ) * Weight[4];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(0,-4) ) * Weight[4];
+return sum;
+}
+vec4 GaussPass2()
+{
+ivec2 pix = ivec2( gl_FragCoord.xy );
+vec4 sum = texelFetch(Texture0, pix, 0) * Weight[0];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(1,0) ) * Weight[1];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(-1,0) ) * Weight[1];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(2,0) ) * Weight[2];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(-2,0) ) * Weight[2];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(3,0) ) * Weight[3];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(-3,0) ) * Weight[3];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(4,0) ) * Weight[4];
+sum += texelFetchOffset( Texture0, pix, 0, ivec2(-4,0) ) * Weight[4];
+return sum;
+}
+
 
 void main() {
     //The passNum uniform is used to determine which shading function to use.
@@ -199,5 +230,13 @@ void main() {
     else if(passNum == 4)
     {
         FragColour = EdgeDetection();
+    }
+    else if(passNum == 5)
+    {
+        FragColour = GaussPass1();
+    }
+        else if(passNum == 6)
+    {
+        FragColour = GaussPass2();
     }
 }

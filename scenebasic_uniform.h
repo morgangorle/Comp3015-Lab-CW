@@ -24,6 +24,8 @@ private:
     GLuint skyboxTex;
     GLuint fsQuad, renderTex;
 
+    GLuint intermediateFBO, intermediateTex;
+
     float angle;
     float tPrev;
     float rotSpeed; 
@@ -47,6 +49,8 @@ public:
     void renderScene();
     void renderSkybox();
     void edgeDetection();
+    void gaussBlur();
+    float gauss(float, float);
 };
 
 #endif // SCENEBASIC_UNIFORM_H

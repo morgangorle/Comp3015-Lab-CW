@@ -99,6 +99,22 @@ void SceneBasic_Uniform::initScene()
     glEnableVertexAttribArray(2); // Texture coordinates
     glBindVertexArray(0);
     prog.setUniform("EdgeThreshold", 0.05f);
+
+    // Compute Weights for Gauss Blur
+    float weights[5], sum, sigma2 = 8.0f;
+    weights[0] = gauss(0, sigma2);
+    sum = weights[0];
+    for (int i = 1; i < 5; i++) {
+        weights[i] = gauss(float(i), sigma2);
+        sum += 2 * weights[i];
+    }
+    // Normalize the weights and set the uniform
+    for (int i = 0; i < 5; i++) {
+        std::stringstream uniName;
+        uniName << "Weight[" << i << "]";
+        float val = weights[i] / sum;
+        prog.setUniform(uniName.str().c_str(), val);
+    }
 }
 
 void SceneBasic_Uniform::compile()
@@ -129,7 +145,7 @@ void SceneBasic_Uniform::update(float t)
 void SceneBasic_Uniform::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //renderSkybox();
+    renderSkybox();
     //bind the buffer
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
@@ -142,7 +158,7 @@ void SceneBasic_Uniform::render()
     //render the scene using the newly written texture
     renderScene();
     glFlush();
-    edgeDetection();
+    //edgeDetection();
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -170,9 +186,11 @@ void SceneBasic_Uniform::setMatrices()
 void SceneBasic_Uniform::renderScene() {
     glViewport(0, 0, width, height);
     //Disable the below if disabling the Edge detection as otherwise there's unpleasant flashing.
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderTex);
     glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Also be sure to disable the below line otherwise the SkyBox won't appear.
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 0);
     //glViewport(0, 0, width, height);
@@ -252,7 +270,36 @@ void SceneBasic_Uniform::edgeDetection() {
     glBindVertexArray(0);
 }
 
+void SceneBasic_Uniform::gaussBlur() {
 
+    prog.setUniform("passNum", 5);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderTex);
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    model = mat4(1.0f);
+    view = mat4(1.0f);
+    projection = mat4(1.0f);
+    setMatrices();
+    // Render the full-screen quad
+    glBindVertexArray(fsQuad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    prog.setUniform("passNum", 6);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, intermediateTex);
+    glClear(GL_COLOR_BUFFER_BIT);
+    model = mat4(1.0f);
+    view = mat4(1.0f);
+    projection = mat4(1.0f);
+    setMatrices();
+    // Render the full-screen quad
+    glBindVertexArray(fsQuad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+}
 void SceneBasic_Uniform::setupFBO() {
     // Generate and bind the framebuffer
     glGenFramebuffers(1, &fboHandle);
@@ -288,6 +335,30 @@ void SceneBasic_Uniform::setupFBO() {
     }
     // Unbind the framebuffer, and revert to default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    // Making addional FBOs for Gauss Blur
+
+
+    // Generate and bind the framebuffer
+    glGenFramebuffers(1, &intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+    // Create the texture object
+    glGenTextures(1, &intermediateTex);
+    glActiveTexture(GL_TEXTURE0); // Use texture unit 0
+    glBindTexture(GL_TEXTURE_2D, intermediateTex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    // Bind the texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        intermediateTex, 0);
+    // No depth buffer needed for this FBO
+    // Set the targets for the fragment output variables
+    glDrawBuffers(1, drawBuffers);
+    // Unbind the framebuffer, and revert to default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void SceneBasic_Uniform::renderToTexture() {
@@ -304,4 +375,11 @@ void SceneBasic_Uniform::renderToTexture() {
     model = glm::rotate(model, angle, vec3(0.0f, 0.0f, 1.0f));
     setMatrices();
     spot->render();
+}
+
+float SceneBasic_Uniform::gauss(float x, float sigma2)
+{
+    double coeff = 1.0 / (glm::two_pi<double>() * sigma2);
+    double expon = -(x * x) / (2.0 * sigma2);
+    return (float)(coeff * exp(expon));
 }
