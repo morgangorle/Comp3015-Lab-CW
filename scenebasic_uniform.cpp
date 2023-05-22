@@ -52,6 +52,10 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("Light.La", vec3(0.5f));
     prog.setUniform("Light.Ld", vec3(0.9f));
     prog.setUniform("Light.Ls", vec3(0.9f));
+    // Edge detection versions
+    //prog.setUniform("Light.La", vec3(0.2f));
+    //prog.setUniform("Light.Ld", vec3(1.0f));
+    //prog.setUniform("Light.Ls", vec3(1.0f));
     //Set up fog uniforms.
     prog.setUniform("Fog.MaxDist", 100.0f);
     prog.setUniform("Fog.MinDist", 10.0f);
@@ -125,7 +129,7 @@ void SceneBasic_Uniform::update(float t)
 void SceneBasic_Uniform::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    renderSkybox();
+    //renderSkybox();
     //bind the buffer
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
@@ -165,6 +169,7 @@ void SceneBasic_Uniform::setMatrices()
 
 void SceneBasic_Uniform::renderScene() {
     glViewport(0, 0, width, height);
+    //Disable the below if disabling the Edge detection as otherwise there's unpleasant flashing.
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -197,7 +202,7 @@ void SceneBasic_Uniform::renderScene() {
     //}
 
     // Handle rendering the plane
-    prog.setUniform("passNum", 1);
+    prog.setUniform("passNum", 3);
     //Set Material Unifroms for Plane
     prog.setUniform("Material.Kd", 0.7f, 0.7f, 0.7f);
     prog.setUniform("Material.Ks", 0.9f, 0.9f, 0.9f);
