@@ -5,7 +5,7 @@ For CW1 info head here - https://github.com/morgangorle/Comp3015-Lab-CW/tree/CW1
 
 Github Page: https://github.com/morgangorle/Comp3015-Lab-CW
 
-Demonstration Video:
+Demonstration Video: https://www.youtube.com/watch?v=2UIXZhPLTwg
 
 ## Development Environment
 
@@ -25,7 +25,7 @@ To accomplish this I ended up making various different versions of a Blinnphong 
 
 * The fog currently appears more like a spotlight on the edges of the view of the camera as opposed to looking like actual fog. There's two reasons for this.
 
-- Firstly the lack of an object being placed within the fog ends up making it hard to demonstrate its effects, I talk more about my difficulties in rendering multiple objects in the video but it was definitely unfortunate.
+- Firstly the lack of an object being placed within the fog ends up making it hard to demonstrate its effects, I talk more about my difficulties in rendering multiple objects in the CW1 video but it was definitely unfortunate.
 
 - Secondly the Fog doesn't effect the Skybox in its current implementation which is unfortunate.
 
