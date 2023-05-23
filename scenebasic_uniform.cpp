@@ -129,7 +129,7 @@ void SceneBasic_Uniform::update(float t)
 void SceneBasic_Uniform::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //renderSkybox();
+    renderSkybox();
     //bind the buffer
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
@@ -172,6 +172,7 @@ void SceneBasic_Uniform::renderScene() {
     //Disable the below if disabling the Edge detection as otherwise there's unpleasant flashing.
     glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
     glEnable(GL_DEPTH_TEST);
+    //Also disable this or the skybox will fail to run.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     prog.setUniform("passNum", 1);
     prog.setUniform("RenderTex", 0);
